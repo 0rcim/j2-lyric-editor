@@ -1,0 +1,11 @@
+{
+	"useExtendedLib": {
+		"weui": true
+	},
+	"pages": [
+		"pages/index"
+	],
+	"window": {
+		"navigationStyle": "custom"
+	}
+}

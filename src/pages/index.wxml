@@ -1,0 +1,6 @@
+<view class="page" data-weui-theme="{{theme}}">
+	<mp-navigation-bar title="J2LyricEditor" back="{{false}}">
+
+	</mp-navigation-bar>
+	<button class="weui-btn" type="primary" bindtap="changeTheme">切换主题</button>
+</view>

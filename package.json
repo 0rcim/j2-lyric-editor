@@ -1,0 +1,32 @@
+{
+	"name": "j2-lyric-editor",
+	"version": "1.0.0",
+	"description": "built with weui",
+	"main": "index.js",
+	"scripts": {
+		"start": "gulp build & gulp",
+		"build": "gulp build"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/0rcim/j2-lyric-editor.git"
+	},
+	"keywords": [
+		"weui",
+		"lyric-editor",
+		"mini-program"
+	],
+	"author": "0rcim",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/0rcim/j2-lyric-editor/issues"
+	},
+	"homepage": "https://github.com/0rcim/j2-lyric-editor#readme",
+	"dependencies": {
+		"gulp": "^4.0.2",
+		"gulp-cssnano": "^2.1.3",
+		"gulp-less": "^3.5.0",
+		"gulp-rename": "^2.0.0",
+		"gulp-watch": "^5.0.1"
+	}
+}
