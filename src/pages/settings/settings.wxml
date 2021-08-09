@@ -1,0 +1,21 @@
+<view class="page" data-weui-theme="{{theme}}">
+	<mp-navigation-bar title="设置"></mp-navigation-bar>
+	<view class="weui-cells__title">主题</view>
+	<view class="weui-cell weui-cell_switch" style="{{'background-color:' + theme_status_}}">
+		<view class="weui-cell__bd" style="{{'color:' + theme_status}}">深色主题</view>
+		<view class="weui-cell__ft">
+			<checkbox-group bindchange="bindThemeChange">
+				<label class="weui-switch-cp">
+					<checkbox class="weui-switch-cp__input" value="enable-dark-mode" checked="{{isDarkModeEnabled}}" />
+					<view class="weui-switch-cp__box"></view>
+				</label>
+			</checkbox-group>
+		</view>
+	</view>
+	<view class="weui-footer" style="padding: 45px 0 25px">
+		<view class="weui-footer__text">已用本地数据存储 1.2 Mb / 10Mb</view>
+		<view class="weui-footer__links" style="padding-top: 8px">
+			<a class="weui-footer__link">J2LyricEditor</a>
+		</view>
+	</view>
+</view>

@@ -2,5 +2,102 @@
 	<mp-navigation-bar title="J2LyricEditor" back="{{false}}">
 
 	</mp-navigation-bar>
-	<button class="weui-btn" type="primary" bindtap="changeTheme">切换主题</button>
+	<swiper autoplay="{{false}}" next-margin="50px">
+		<swiper-item>
+			<view class="weui-flex top-entries">
+				<view class="weui-flex__item">
+					<view class="entry-my-fav main-entry">
+						<view class="icon-layer">
+							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="star"></mp-icon>
+						</view>
+						<view class="label-layer">收藏夹</view>
+					</view>
+				</view>
+				<view class="weui-flex__item">
+					<view class="entry-app-introduction main-entry">
+						<view class="icon-layer">
+							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="help"></mp-icon>
+						</view>
+						<view class="label-layer">使用说明</view>
+					</view>
+				</view>
+			</view>
+		</swiper-item>
+		<swiper-item>
+			<view class="weui-flex top-entries">
+				<view class="weui-flex__item">
+					<view class="entry-useful-tools main-entry">
+						<view class="icon-layer">
+							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="more2"></mp-icon>
+						</view>
+						<view class="label-layer">辅助工具</view>
+					</view>
+				</view>
+				<view class="weui-flex__item">
+					<view class="entry-settings main-entry"
+						data-path="settings/settings"
+						bindtap="navigateTo"
+					>
+						<view class="icon-layer">
+							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="setting"></mp-icon>
+						</view>
+						<view class="label-layer">设置</view>
+					</view>
+				</view>
+			</view>
+		</swiper-item>
+	</swiper>
+	<view class="weui-grids main-func-list">
+		<view class="weui-cells__title">开始制作</view>
+		<a class="weui-grid"
+			data-path="form-lyric-lines/form-lyric-lines"
+			bindtap="navigateTo"
+		>
+			<view class="weui-grid__inner">
+				<view class="weui-grid__icon">
+					<mp-icon type="field" icon="add2" size="{{25}}" color="{{theme_color}}"></mp-icon>
+				</view>
+				<a class="weui-grid__label">新建</a>
+			</view>
+		</a>
+		<a class="weui-grid"
+			bindtap="toChooseMessageFile"
+		>
+			<view class="weui-grid__inner">
+				<view class="weui-grid__icon">
+					<mp-icon type="field" icon="comment" size="{{25}}" color="{{theme_color}}"></mp-icon>
+				</view>
+				<a class="weui-grid__label">聊天文件</a>
+			</view>
+		</a>
+		<a class="weui-grid"
+			bindtap="toImportClipboardData"
+		>
+			<view class="weui-grid__inner">
+				<view class="weui-grid__icon">
+					<mp-icon type="field" icon="text" size="{{25}}" color="{{theme_color}}"></mp-icon>
+				</view>
+				<a class="weui-grid__label">来自剪切板</a>
+			</view>
+		</a>
+	</view>
+	<view class="weui-loadmore weui-loadmore_line" style="margin-top:3rem">
+		<text class="weui-loadmore__tips" style="{{'background-color:' + theme_bg}}">编辑历史</text>
+	</view>
+	<view class="weui-cells__title">2021-08-21</view>
+	<view class="weui-grids">
+		<a class="weui-grid">
+			<view class="weui-grid__icon">
+				<mp-icon type="field" icon="copy" size="{{25}}" color="{{theme_sub_fg}}"></mp-icon>
+			</view>
+			<a class="weui-grid__label">123.lrc</a>
+		</a>
+	</view>
+	<view class="fadeIn {{hide_warn_toast ? 'fadeOut' : ''}}" wx:if="{{warn_toast}}">
+		<view class="weui-mask_transparent"></view>
+		<view class="weui-toast">
+			<i class="weui-icon-warn weui-icon_toast"></i>
+			<view class="weui-toast__content">{{warn_msg}}</view>
+		</view>
+	</view>
 </view>

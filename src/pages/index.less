@@ -1,0 +1,107 @@
+@import (reference) "../styles/var.less";
+
+.weui-grid__icon {
+	display: flex;
+	justify-content: center;
+}
+.weui-grids.main-func-list {
+	background-color: @theme-status-light;
+	margin: 0 8px;
+	border-radius: 6px;
+	padding-bottom: 18px;
+	padding: 0 12px 8px;
+}
+
+.weui-grids.main-func-list .weui-grid {
+	display: flex;
+	justify-content: center;
+	padding: 2px 10px;
+}
+
+.weui-grids.main-func-list .weui-grid__inner {
+	padding: 14px;
+	border-radius: 8px;
+}
+
+.weui-grids.main-func-list .weui-grid::before,
+.weui-grids.main-func-list .weui-grid::after {
+	border-color: transparent;
+}
+
+[data-weui-theme=dark] .weui-grids {
+	background-color: @theme-status-dark;
+}
+
+.top-entries {
+	padding-top: 20px;
+}
+
+.main-entry {
+	margin: 0 8px;
+	min-height: 120px;
+	background-color: @theme-status-light;
+	border-radius: 10px;
+	overflow: hidden;
+	box-sizing: border-box;
+	border: 1px solid @theme-status-light;
+	box-shadow: 0px 3px 10px rgba(125, 125, 125, .12);
+	position: relative;
+}
+
+[data-weui-theme=dark] .main-entry {
+	background-color: @theme-status-dark;
+	border-color: @theme-status-dark;
+}
+
+.entry-my-fav {
+	background-image: linear-gradient(to right bottom, #fdc950, #f9ac08);
+}
+
+.entry-app-introduction {
+	background-image: linear-gradient(to right bottom, @theme-color-light, @theme-color-dark);
+}
+
+.entry-useful-tools {
+	background-image: linear-gradient(to right bottom, #eb211a, #e3281f);
+}
+
+.entry-settings {
+	background-image: linear-gradient(to right bottom, #9cb2c8, #9eb1c7);
+}
+
+.main-entry .icon-layer {
+	display: flex;
+	justify-content: center;
+	padding-top: 15px;
+}
+
+.main-entry .label-layer {
+	padding-top: 14px;
+	text-align: center;
+	letter-spacing: 2px;
+	color: @theme-status-light;
+	font-weight: bold;
+}
+
+[data-weui-theme=dark] .main-entry .label-layer {
+	padding-top: 14px;
+	text-align: center;
+	letter-spacing: 2px;
+	color: @theme-status-dark;
+	font-weight: bold;
+}
+
+[data-weui-theme=dark] .main-entry::before {
+	content: "";
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, .22);
+	top: 0;
+	left: 0;
+}
+
+.main-func-list a.weui-grid .weui-grid__inner:active {
+	background-color: var(--weui-BG-COLOR-ACTIVE);
+}

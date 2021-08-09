@@ -3,7 +3,9 @@
 		"weui": true
 	},
 	"pages": [
-		"pages/index"
+		"pages/index",
+		"pages/settings/settings",
+		"pages/form-lyric-lines/form-lyric-lines"
 	],
 	"window": {
 		"navigationStyle": "custom"

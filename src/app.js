@@ -5,7 +5,9 @@ const themeListeners = [];
 App(
 	{
 		globalData: {
-			theme: "light"
+			theme: "light",
+			fsm: null,
+			temp_text_file_parser: null
 		},
 		themeChanged (theme) {
 			this.globalData.theme = theme;

@@ -3,9 +3,17 @@
 .page, page {
 	height: 100%;
 	background-color: @bg-light;
-	font-family: -apple-system-font, Arial, Helvetica Neue, sans-serif;
+	font-family: @font-family;
+}
+
+.weui-input__placeholder {
+	font-family: @font-family;
 }
 
 .page[data-weui-theme=dark] {
 	background-color: @bg-dark;
+}
+
+.weui-navigation-bar.no-placeholder-height .weui-navigation-bar__placeholder {
+	display: none;
 }

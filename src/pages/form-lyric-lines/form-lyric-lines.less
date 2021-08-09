@@ -1,0 +1,26 @@
+@import "../../styles/var.less";
+
+.no-placeholder-height .weui-navigation-bar__placeholder {
+	display: none;
+}
+.weui-cells {
+	position: relative;
+}
+.insert-line-after {
+	position: absolute;
+	width: 30px;
+	height: 30px;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-image: linear-gradient(to top left, @theme-color-dark, @theme-color-light);
+	border-radius: 50%;
+}
+.insert-line-after .weui-icon {
+	transform: rotate(-135deg);
+}
+page {
+	overflow-x: hidden;
+}

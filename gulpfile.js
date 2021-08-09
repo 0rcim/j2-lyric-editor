@@ -7,7 +7,7 @@ const watch = require("gulp-watch");
 
 gulp.task("build:style", done => {
 	gulp
-	.src(["src/!(styles)/*.less", "src/*.less"], { base: "src" })
+	.src(["src/!(styles)/**/*.less", "src/*.less"], { base: "src" })
 	.pipe(less())
 	.pipe(
 		cssnano(
