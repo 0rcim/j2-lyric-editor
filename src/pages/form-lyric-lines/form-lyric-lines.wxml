@@ -5,6 +5,19 @@
 	<view class="weui-form" wx:if="{{!loading_toast}}">
 		<view class="weui-form__control-area">
 			<view class="weui-cells__group weui-cells__group_form" style="padding-bottom:32px">
+				<view class="weui-cells__title">曲名</view>
+				<view class="weui-cells weui-cells_form">
+					<view class="weui-cell weui-cell_active">
+						<view class="weui-cell__bd">
+							<input cursor-spacing="15px" bindinput="bindInputSongName" confirm-hold="{{true}}" class="weui-input" placeholder="{{song_name_default_placeholder}}" placeholder-style="font-family:inherit" placeholder-class="weui-input__placeholder"/>
+						</view>
+					</view>
+					<view class="insert-line-after" wx:if="{{focused_line === index}}" data-id="{{index}}" bindtap="bindInsertLineAfter">
+						<mp-icon type="field" icon="sending" color="{{theme_status_}}"></mp-icon>
+					</view>
+				</view>
+			</view>
+			<view class="weui-cells__group weui-cells__group_form">
 				<view class="weui-cells__title">输入歌词</view>
 				<block wx:for="{{lyric_group}}" wx:key="index" wx:for-item="item">
 					<view class="weui-cells weui-cells_form">
@@ -23,13 +36,19 @@
 					</view>
 				</block>
 			</view>
-			<view class="button-sp-area" style="text-align:center">
-				<button class="weui-btn weui-btn_mini weui-btn_default" bindtap="bindAddNewLyricLine">添加一行</button>
+			<view class="button-sp-area" style="text-align:center;padding-top:20px">
+				<button class="weui-btn weui-btn_mini weui-btn_default" bindtap="bindAddNewLyricLine">追加一行</button>
 			</view>
 		</view>
 		<view class="weui-form__opr-area">
-			<button class="weui-btn weui-btn_primary">下一步</button>
+			<button class="weui-btn weui-btn_primary" type="primary" bindtap="bindFormSubmit">下一步</button>
 		</view>
 	</view>
 	<mp-loading type="circle" show="{{loading_toast}}" animate="{{true}}" tips="{{loading_msg}}"></mp-loading>
+	<view class="fadeIn {{hide_text_toast ? 'fadeOut' : ''}}" wx:if="{{text_toast}}">
+		<view class="weui-mask_transparent"></view>
+		<view class="weui-toast weui-toast_text">
+			<view class="weui-toast__content">{{text_toast_msg}}</view>
+		</view>
+	</view>
 </view>

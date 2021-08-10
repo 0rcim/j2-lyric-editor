@@ -5,7 +5,8 @@
 	"pages": [
 		"pages/index",
 		"pages/settings/settings",
-		"pages/form-lyric-lines/form-lyric-lines"
+		"pages/form-lyric-lines/form-lyric-lines",
+		"pages/lyric-editor/lyric-editor"
 	],
 	"window": {
 		"navigationStyle": "custom"

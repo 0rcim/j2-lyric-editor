@@ -1,0 +1,95 @@
+<view class="page" data-weui-theme="{{theme}}">
+	<mp-navigation-bar title="时间轴录制" background="{{theme_bg}}">
+
+	</mp-navigation-bar>
+	<view class="full-lyric-container">
+		<view class="complete-percentange-progress"></view>
+		<view class="start-icon">
+			<mp-icon type="field" size="{{22}}" icon="music" color="{{theme_color}}"></mp-icon>
+		</view>
+		<scroll-view enable-flex="{{true}}" enhanced="{{true}}" show-scroll-bar="{{false}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height:50px;position:relative;background-color:{{theme_bg}}">
+			<view class="full-lyric">
+				<text>{{lyrics[current_line_idx] || ''}}</text>
+				<text wx:if="{{lyrics[current_line_idx]===''}}" style="font-style: italic;color:{{theme_status}}">（空白行）</text>
+			</view>
+		</scroll-view>
+	</view>
+	<view class="main-container">
+		<view class="line-index">
+			<text class="line-index__inner" style="color:{{theme_status}}">第 {{current_line_idx + 1}} / {{lyrics.length}} 行</text>
+		</view>
+		<swiper class="action-container">
+			<swiper-item class="action-item action-spreview-details" style="position:relative">
+				<picker-view 
+					bindpickstart="bindLinePickStart" 
+					bindpickend="bindLinePickEnd" 
+					bindchange="bindLineChange"
+					indicator-class="scroller-indicator"
+					mask-style="opacity:0;" 
+					class="lyric-scroller-picker-view"
+				>
+					<picker-view-column class="lyric-scroller-container">
+						<view wx:for="{{lyrics}}" class="outer {{current_line_idx === index ? 'activated' : ''}}" wx:key="index">
+							<view class="lyric-item">{{item}}</view>
+						</view>
+					</picker-view-column>
+				</picker-view>
+			</swiper-item>
+		</swiper>
+
+		<view class="absolute-fill-countdown-layer" style="display:{{countdown_layer_showing ? 'felx' : 'none'}}">
+			<view 
+				wx:for="{{total_count}}"
+				wx:key="index"
+				class="countdown-number"
+				id="countdown-number-{{index + 1}}"
+				style="display:{{current_count === index + 1 ? 'block' : 'none'}};color:#fff"
+			>
+				<text>{{index + 1}}</text>
+			</view>
+		</view>
+	</view>
+	<view class="floating-action-button-container status-{{recording_status}}">
+		<view 
+			wx:if="{{recording_status === 0 || recording_status === 3}}"
+			class="floating-action-button"
+			bindtap="openConfirmUseBackgroundAudioDialog"
+		>
+			<mp-icon size="{{28}}" type="outline" icon="play" color="{{theme_status_}}"></mp-icon>
+		</view>
+		<view 
+			wx:if="{{recording_status === 1}}"
+			class="floating-action-button next-lyric-line"
+		>
+			<mp-icon size="{{28}}" type="field" icon="sending" color="{{theme_status_}}"></mp-icon>
+		</view>
+		<view 
+			wx:if="{{recording_status === 2}}"
+			class="floating-action-button next-finished"
+		>
+			<mp-icon size="{{28}}" type="field" icon="done" color="{{theme_status_}}"></mp-icon>
+		</view>
+	</view>
+</view>
+<view class="fadeIn" wx:if="{{is_dialog_open}}">
+	<view class="weui-mask" style="z-index:5002" bindtap="bindTapDialogShade"></view>
+	<view class="weui-dialog weui-skin_android" style="z-index:5003">
+		<view class="weui-dialog__hd"><strong class="weui-dialog__title">{{dialog_title}}</strong></view>
+		<view class="weui-dialog__bd">
+			{{dialog_bd_content}}
+		</view>
+		<view class="weui-dialog__ft">
+			<a class="weui-dialog__btn weui-dialog__btn_{{item.type}}"
+				wx:for="{{dialog_btn_group}}"
+				wx:key="index"
+				data-idx="{{index}}"
+				data-tap-event-name="{{item.tap_event_name}}"
+				bindtap="bindDailogBtnTap"
+
+				data-selector="#count-down-number"
+				data-countdown-num="{{COUNTDOWN_NUM}}"
+				data-end-callback-fn-name="bindCountDownEnd"
+			>{{item.text}}</a>
+		</view>
+	</view>
+</view>

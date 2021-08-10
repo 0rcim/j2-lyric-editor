@@ -1,13 +1,15 @@
 module.exports = {
 	data: {
-		hide_warn_toast: true,
 		warn_toast: false,
 		warn_timer: null,
 		warn_msg: "",
 		// === //
-		hide_loading_toast: false,
 		loading_toast: false,
-		loading_msg: ""
+		loading_msg: "",
+		// === //
+		text_toast: false,
+		text_timer: null,
+		text_toast_msg: ""
 	},
 	showWarningToast ({ time=3000, msg="" }) {
 		var that = this;
@@ -22,5 +24,13 @@ module.exports = {
 	},
 	hideLoadingToast () {
 		this.setData({loading_toast: false});
+	},
+	showTextToast ({ time=3000, msg="" }) {
+		var that = this;
+		this.setData({text_toast: true, text_toast_msg: msg});
+		this.data.text_timer = setTimeout(() => {
+			that.setData({text_toast: false});
+			clearTimeout(that.data.text_timer);
+		}, time);
 	}
 }

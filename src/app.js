@@ -7,7 +7,8 @@ App(
 		globalData: {
 			theme: "light",
 			fsm: null,
-			temp_text_file_parser: null
+			temp_text_file_parser: null,
+			temp_lyric_lines: null
 		},
 		themeChanged (theme) {
 			this.globalData.theme = theme;
