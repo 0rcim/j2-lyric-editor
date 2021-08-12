@@ -51,6 +51,7 @@
 	url(data:image/svg+xml,%3Csvg%20width%3D%2212%22%20height%3D%2216%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%200v16L3%208z%22%20fill%3D%22%2311c95b%22%2F%3E%3C%2Fsvg%3E);
 	background-position: left center, right center;
 	background-repeat: no-repeat;
+	opacity: .76;
 }
 
 .scroller-indicator::before,
@@ -92,15 +93,120 @@
 	height: 100%;
 	position: relative;
 }
-.lyric-scroller-picker-view {
+.lyric-scroller-picker-view,
+.lyric-player-picker-view {
 	height: 100%;
 	background-color: @theme-status-light;
 }
+.lyric-player-picker-view {
+	background-color: transparent;
+}
+
+.player-indicator {
+	height: 94px;
+}
+.player-mask {
+	opacity: 0;
+}
+.player-indicator::before,
+.player-indicator::after {
+	opacity: 0;
+}
+
+.lyric-time-line-item-outer {
+	display: flex;
+	flex-direction: row;
+	.time-wrap-container {
+		width: 36px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		.time-text-cell {
+			color: #000;
+			white-space: nowrap;
+			transform-origin: center;
+			transform: rotate(-90deg);
+			height: 20px;
+			padding: 0 8px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border-radius: 10px;
+			background-color: rgba(125, 125, 125, .12);
+			text {
+				font-size: 14px;
+			}
+		}
+	}
+	.lyric-wrap-container {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		border-top-left-radius: 12px;
+		border-bottom-left-radius: 12px;
+		overflow: hidden;
+		.lyric-wrap-inner {
+			padding: 0 12px;
+			line-height: 24px;
+		}
+	}
+}
+
+[data-weui-theme=dark] .lyric-time-line-item-outer {
+	.time-wrap-container {
+		.time-text-cell {
+			background-color: rgba(165, 165, 165, .64);
+			color: #cdcfcc;
+		}
+	}
+	.lyric-wrap-container {
+		color: #fff;
+	}
+}
+
+.lyric-time-line-item-outer.activated {
+	.time-text-cell {
+		color: @theme-status-light;
+		background-image: linear-gradient(to bottom, @theme-color-dark, @theme-color-light);
+	}
+	.lyric-wrap-container {
+		position: relative;
+		overflow: hidden;
+		&::after {
+			content: "";
+			display: block;
+			position: absolute;
+			width: 200%;
+			height: 100%;
+			transform: translateX(-50%);
+			background-image: radial-gradient(circle at center, fadeout(@theme-color-light, 20%), fadeout(@theme-color-light, 100%) 100%);
+			animation: glow 500ms forwards linear;
+			z-index: -1;
+		}
+	}
+}
+
+[data-weui-theme=dark] .lyric-time-line-item-outer.activated {
+	.time-text-cell {
+		color: @theme-status-dark;
+	}
+	.lyric-wrap-container {
+		&::after {
+			background-image: radial-gradient(circle at center, fadeout(@theme-color-dark, 20%), fadeout(@theme-color-dark, 100%) 100%);
+		}
+	}
+}
+
+
 [data-weui-theme=dark] .lyric-scroller-picker-view {
 	background-color: @theme-status-dark;
 }
 .floating-action-button-container {
-	position: fixed;
+	position: absolute;
 	height: 80px;
 	left: 0;
 	right: 0;
@@ -121,11 +227,23 @@
 	box-shadow: 0 5px 8px fadeout(@theme-color-light, 60%);
 	position: relative;
 	overflow: hidden;
-
 }
 [data-weui-theme=dark] .floating-action-button {
 	border-color: @theme-status-dark;
 	box-shadow: 0 5px 8px fadeout(@theme-color-dark, 78%);
+}
+.imported-bg-audio-progress-layer {
+	position: absolute;
+	left: -2px;
+	right: -2px;
+	top: -2px;
+	bottom: -2px;
+	box-sizing: border-box;
+	border-radius: 50%;
+	background-color: transparent;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 100%;
 }
 
 .floating-action-button-container::after {
@@ -155,20 +273,83 @@
 	background-color: red;
 	animation: status-blink 2s none infinite;
 }
-// 录制完毕
+// 暂停
 .floating-action-button-container.status-3::after {
+	background-color: green;
+	animation: status-blink 2s none infinite;
+}
+// 录制完毕
+.floating-action-button-container.status-4::after {
 	background-color: silver;
 }
 // 录制错误
-.floating-action-button-container.status-4::after {
+.floating-action-button-container.status-5::after {
 	background-color: goldenrod;
+}
+
+.floating-sub-func-btn,
+.floating-button {
+	position: absolute;
+	width: 34px;
+	height: 34px;
+	background-color: rgba(125, 125, 125, .64);
+	border-radius: 17px;
+	top: 15px;
+	right: 80px;
+	display: none;
+	justify-content: center;
+	align-items: center;
+	border: 2px solid transparent;
+	box-sizing: border-box;
+	box-shadow: 1.5px 2px 3px rgba(125, 125, 125, .34);
+}
+
+.floating-button {
+	width: 10em;
+	height: 28px;
+	border-radius: 4px;
+	display: block;
+	white-space: nowrap;
+	font-size: 14px;
+	right: unset;
+	top: -100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.floating-button.import-message-audio {
+	box-shadow: 0 1px 1.5px rgba(125, 125, 125, .34);
+	z-index: 9;
+}
+
+[data-weui-theme=dark] .floating-sub-func-btn,
+[data-weui-theme=dark] .floating-button {
+	background-color: rgba(165, 165, 165, .64);
+}
+.floating-sub-func-btn:hover,
+.floating-button:hover {
+	border: 2px solid @theme-status-dark;
+}
+[data-weui-theme=dark] .floating-sub-func-btn:hover,
+[data-weui-theme=dark] .floating-button:hover {
+	border: 2px solid @theme-status-light;
+}
+.floating-action-button-container.status-1 .pause-timer,
+.floating-action-button-container.status-2 .pause-timer {
+	display: flex;
+}
+
+.floating-action-button-container.status-3 .reset-timer {
+	display: flex;
+	right: unset;
+	left: 80px;
 }
 
 .complete-percentange-progress {
 	position: absolute;
 	bottom: 0;
 	left: 0;
-	right: 0;
+	right: 100%;
 	z-index: 10;
 }
 .complete-percentange-progress::after {
@@ -201,6 +382,27 @@
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
+.lyric-item.recorded {
+	color: @theme-color-light;
+}
+.lyric-item.recording::before,
+.lyric-item.recording::after {
+	animation: status-blink 2s none infinite;
+	opacity: 1;
+}
+[data-weui-theme=dark] .lyric-item.recorded {
+	color: @theme-color-dark;
+}
+.lyric-item::before {
+	content: "‘ ";
+	color: gray;
+	opacity: .25;
+}
+.lyric-item::after {
+	content: " ’";
+	color: gray;
+	opacity: .25;
+}
 .outer {
 	position: relative;
 	height: 50px;
@@ -225,4 +427,22 @@
 	25% {visibility: hidden;}
 	75% {visibility: hidden;}
 	to {visibility: visible;}
+}
+
+@keyframes glow {
+	from {
+		transform: translateX(-50%);
+	}
+	35% {
+		transform: translateX(-45%);
+	}
+	50% {
+		transform: translateX(0%);
+	}
+	65% {
+		transform: translateX(45%);
+	}
+	to {
+		transform: translateX(50%);
+	}
 }

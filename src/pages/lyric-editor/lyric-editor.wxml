@@ -1,16 +1,17 @@
 <view class="page" data-weui-theme="{{theme}}">
-	<mp-navigation-bar title="时间轴录制" background="{{theme_bg}}">
+	<mp-navigation-bar 
+		title="{{recording_status === 1 || recording_status === 2 || recording_status === 3 ? editor_stopwatch_text + audio_duration_time_text : swiper_current_index === 0 ? (bg_audio_player ? bg_audio_player.audio_full_file_name : '时间轴录制') : '歌词播放预览'}}" background="{{theme_bg}}">
 
 	</mp-navigation-bar>
-	<view class="full-lyric-container">
-		<view class="complete-percentange-progress"></view>
+	<view class="full-lyric-container" wx:if="{{swiper_current_index === 0}}">
+		<view class="complete-percentange-progress" style="right:{{(1 - current_recording_line_idx / lyrics.length) * 100}}%"></view>
 		<view class="start-icon">
 			<mp-icon type="field" size="{{22}}" icon="music" color="{{theme_color}}"></mp-icon>
 		</view>
 		<scroll-view enable-flex="{{true}}" enhanced="{{true}}" show-scroll-bar="{{false}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height:50px;position:relative;background-color:{{theme_bg}}">
 			<view class="full-lyric">
-				<text>{{lyrics[current_line_idx] || ''}}</text>
-				<text wx:if="{{lyrics[current_line_idx]===''}}" style="font-style: italic;color:{{theme_status}}">（空白行）</text>
+				<text wx:if="{{lyrics[current_line_idx] !== '' && lyrics[current_line_idx] !== '___PRE_LINE___'}}">{{lyrics[current_line_idx] || ''}}</text>
+				<text wx:else style="color:{{theme_status}};opacity: .35">{{lyrics[current_line_idx] === '___PRE_LINE___' ? '预备行' : '空白行'}}</text>
 			</view>
 		</scroll-view>
 	</view>
@@ -18,22 +19,93 @@
 		<view class="line-index">
 			<text class="line-index__inner" style="color:{{theme_status}}">第 {{current_line_idx + 1}} / {{lyrics.length}} 行</text>
 		</view>
-		<swiper class="action-container">
-			<swiper-item class="action-item action-spreview-details" style="position:relative">
+		<swiper class="action-container" duration="250"
+			current="{{swiper_current_index}}"
+			bindchange="bindCurrentActionContainerChange"
+		>
+			<swiper-item class="action-item action-recording-lyric" style="position:relative">
 				<picker-view 
 					bindpickstart="bindLinePickStart" 
 					bindpickend="bindLinePickEnd" 
-					bindchange="bindLineChange"
+					bindchange="bindRecordingLyricLineChange"
 					indicator-class="scroller-indicator"
 					mask-style="opacity:0;" 
 					class="lyric-scroller-picker-view"
+					value="{{[current_recording_line_idx]}}"
 				>
 					<picker-view-column class="lyric-scroller-container">
 						<view wx:for="{{lyrics}}" class="outer {{current_line_idx === index ? 'activated' : ''}}" wx:key="index">
-							<view class="lyric-item">{{item}}</view>
+							<view class="lyric-item {{index < current_recording_line_idx ? 'recorded' : ''}} {{current_recording_line_idx === index ? 'recording' : ''}}">{{item === '___PRE_LINE___' ? '' : item}}</view>
 						</view>
 					</picker-view-column>
 				</picker-view>
+				<view class="floating-action-button-container status-{{recording_status}}">
+					<view wx:if="{{recording_status === 0}}" class="floating-button import-message-audio" bindtap="toChooseMessageBgAudio">
+						<text style="color:{{theme_status_}}">从消息记录导入音频</text>
+					</view>
+					<view 
+						wx:if="{{recording_status === 0 || recording_status === 3 || recording_status === 4}}"
+						class="floating-action-button"
+						data-selector="#count-down-number"
+						data-countdown-num="{{COUNTDOWN_NUM}}"
+						data-end-callback-fn-name="bindCountDownEnd"
+						bindtap="openConfirmUseBackgroundAudioDialog"
+					>
+						<mp-icon size="{{28}}" type="outline" icon="play" color="{{theme_status_}}"></mp-icon>
+					</view>
+					<view 
+						wx:if="{{recording_status === 1}}"
+						class="floating-action-button next-lyric-line"
+						bindtap="goNextLyricLine"
+						style="position:relative;overflow:unset;"
+					>
+						<view class="imported-bg-audio-progress-layer" style="{{audio_round_progress_bg_img_style_text}}"></view>
+						<mp-icon size="{{28}}" type="field" icon="sending" color="{{theme_status_}}"></mp-icon>
+					</view>
+					<view class="floating-sub-func-btn pause-timer"
+						bindtap="bindPauseStopWatch"
+					>
+						<mp-icon size="{{18}}" type="field" icon="pause" color="{{theme_status_}}"></mp-icon>
+					</view>
+					<view class="floating-sub-func-btn reset-timer"
+						bindtap="bindResetStopWatch"
+					>
+						<mp-icon size="{{18}}" type="field" icon="refresh" color="{{theme_status_}}"></mp-icon>
+					</view>
+					<view 
+						wx:if="{{recording_status === 2}}"
+						class="floating-action-button next-finished"
+						bindtap="bindCompleteLyricRecording"
+					>
+						<mp-icon size="{{28}}" type="field" icon="done" color="{{theme_status_}}"></mp-icon>
+					</view>
+				</view>
+			</swiper-item>
+			<swiper-item class="action-item action-music-lyric-player">
+				<!-- <picker-view
+					class="lyric-player-picker-view"
+					indicator-class="player-indicator"
+					mask-class="player-mask"
+					bindchange="bindPlayerLyricLineChange"
+				>
+					<picker-view-column class="lyric-player-container">
+						<view class="lyric-time-line-item-outer {{current_player_lyric_line_index === index ? 'activated' : ''}}"
+							wx:for="{{6}}"
+							wx:key="index"
+						>
+							<view class="time-wrap-container">
+								<view class="time-text-cell">
+									<text>00:12.000</text>
+								</view>
+							</view>
+							<view class="lyric-wrap-container">
+								<view class="lyric-wrap-inner">
+									qwertyuio, asdasdas, ksisnas,qwertyuio, asdasdas, ksisnas.qwertyuio, asdasdas, ksisnas.qwertyuio, asdasdas, ksisnas.
+								</view>
+							</view>
+						</view>
+					</picker-view-column>
+				</picker-view> -->
 			</swiper-item>
 		</swiper>
 
@@ -47,27 +119,6 @@
 			>
 				<text>{{index + 1}}</text>
 			</view>
-		</view>
-	</view>
-	<view class="floating-action-button-container status-{{recording_status}}">
-		<view 
-			wx:if="{{recording_status === 0 || recording_status === 3}}"
-			class="floating-action-button"
-			bindtap="openConfirmUseBackgroundAudioDialog"
-		>
-			<mp-icon size="{{28}}" type="outline" icon="play" color="{{theme_status_}}"></mp-icon>
-		</view>
-		<view 
-			wx:if="{{recording_status === 1}}"
-			class="floating-action-button next-lyric-line"
-		>
-			<mp-icon size="{{28}}" type="field" icon="sending" color="{{theme_status_}}"></mp-icon>
-		</view>
-		<view 
-			wx:if="{{recording_status === 2}}"
-			class="floating-action-button next-finished"
-		>
-			<mp-icon size="{{28}}" type="field" icon="done" color="{{theme_status_}}"></mp-icon>
 		</view>
 	</view>
 </view>
@@ -91,5 +142,11 @@
 				data-end-callback-fn-name="bindCountDownEnd"
 			>{{item.text}}</a>
 		</view>
+	</view>
+</view>
+<view class="fadeIn" wx:if="{{text_toast}}">
+	<view class="weui-mask_transparent"></view>
+	<view class="weui-toast weui-toast_text">
+		<view class="weui-toast__content">{{text_toast_msg}}</view>
 	</view>
 </view>

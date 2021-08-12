@@ -39,6 +39,7 @@ module.exports = {
 		}
 	},
 	bindTapDialogShade () {
+		this.data.shade_close &&
 		this.setData(
 			{is_dialog_open: false}
 		);

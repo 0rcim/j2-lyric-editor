@@ -8,7 +8,8 @@ App(
 			theme: "light",
 			fsm: null,
 			temp_text_file_parser: null,
-			temp_lyric_lines: null
+			temp_lyric_lines: null/*  || require("./libs/test_lyric_lines") */,
+			wx_bg_audio_player: null
 		},
 		themeChanged (theme) {
 			this.globalData.theme = theme;

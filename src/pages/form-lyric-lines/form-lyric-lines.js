@@ -1,5 +1,6 @@
 import TextFileParser from "../../libs/TextFileParser";
 import fecha from "../../plugins/fecha";
+import {FILE_EXT_DATE_MASK} from "../../libs/fecha.mask";
 import LyricLines from "../../libs/LyricLines";
 
 Page(
@@ -18,7 +19,7 @@ Page(
 			let that = this;
 			const has_temp_file = getApp().globalData.temp_text_file_parser instanceof TextFileParser;
 			const now = new Date();
-			const song_name_default_placeholder = fecha.format(now, "MMDD HH:mm:ss");
+			const song_name_default_placeholder = fecha.format(now, FILE_EXT_DATE_MASK);
 			if (has_temp_file) {
 				this.showLoadingToast();
 				let parsed_lines = getApp().globalData.temp_text_file_parser.getParsedLine();
@@ -146,7 +147,8 @@ Page(
 				that.data.lyric_group,
 				{
 					createDate: that.data.createDate,
-					songName: that.data.song_name_default_placeholder || that.data.song_name
+					placeholderName: that.data.song_name_default_placeholder,
+					inputName: that.data.song_name
 				}
 			);
 			wx.navigateTo(
