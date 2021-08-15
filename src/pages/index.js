@@ -51,7 +51,7 @@ Page(
 					const [{name, path, size, time, type}] = res.tempFiles;
 					let err_msg;
 					if (size > that.data.MAX_FILE_SIZE) {
-						err_msg = "文件体积大于100Kb";
+						err_msg = "文件体积大于60Kb";
 					} else if (!/\.txt$/.test(name)) {
 						err_msg = "仅支持TXT文件";
 					}

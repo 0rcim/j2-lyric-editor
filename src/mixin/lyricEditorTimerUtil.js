@@ -51,7 +51,7 @@ module.exports = {
 					}
 				);
 			},
-			10
+			250
 		);
 		console.log("set stop watch timer->", timer);
 		this.setData(

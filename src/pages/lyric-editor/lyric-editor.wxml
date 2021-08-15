@@ -10,8 +10,8 @@
 		</view>
 		<scroll-view enable-flex="{{true}}" enhanced="{{true}}" show-scroll-bar="{{false}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height:50px;position:relative;background-color:{{theme_bg}}">
 			<view class="full-lyric">
-				<text wx:if="{{lyrics[current_line_idx] !== '' && lyrics[current_line_idx] !== '___PRE_LINE___'}}">{{lyrics[current_line_idx] || ''}}</text>
-				<text wx:else style="color:{{theme_status}};opacity: .35">{{lyrics[current_line_idx] === '___PRE_LINE___' ? '预备行' : '空白行'}}</text>
+				<text wx:if="{{lyrics[current_line_idx] !== '' && lyrics[current_line_idx] !== '___PRE_LINE___' && lyrics[current_line_idx] !== '___END_LINE___'}}">{{lyrics[current_line_idx] || ''}}</text>
+				<text wx:else style="color:{{theme_status}};opacity: .35">{{lyrics[current_line_idx] === '___PRE_LINE___' ? '预备行' : lyrics[current_line_idx] === '___END_LINE___' ? '尾行' : '空白行'}}</text>
 			</view>
 		</scroll-view>
 	</view>
@@ -23,10 +23,8 @@
 			current="{{swiper_current_index}}"
 			bindchange="bindCurrentActionContainerChange"
 		>
-			<swiper-item class="action-item action-recording-lyric" style="position:relative">
-				<picker-view 
-					bindpickstart="bindLinePickStart" 
-					bindpickend="bindLinePickEnd" 
+			<swiper-item class="action-item action-recording-lyric">
+				<picker-view
 					bindchange="bindRecordingLyricLineChange"
 					indicator-class="scroller-indicator"
 					mask-style="opacity:0;" 
@@ -35,7 +33,7 @@
 				>
 					<picker-view-column class="lyric-scroller-container">
 						<view wx:for="{{lyrics}}" class="outer {{current_line_idx === index ? 'activated' : ''}}" wx:key="index">
-							<view class="lyric-item {{index < current_recording_line_idx ? 'recorded' : ''}} {{current_recording_line_idx === index ? 'recording' : ''}}">{{item === '___PRE_LINE___' ? '' : item}}</view>
+							<view class="lyric-item {{index < current_recording_line_idx ? 'recorded' : ''}} {{current_recording_line_idx === index ? 'recording' : ''}}">{{item === '___PRE_LINE___' || item === '___END_LINE___' ? '' : item}}</view>
 						</view>
 					</picker-view-column>
 				</picker-view>
@@ -82,34 +80,106 @@
 				</view>
 			</swiper-item>
 			<swiper-item class="action-item action-music-lyric-player">
-				<!-- <picker-view
-					class="lyric-player-picker-view"
+				<view
+					class="lyric-player-scroll-view-container"
 					indicator-class="player-indicator"
 					mask-class="player-mask"
 					bindchange="bindPlayerLyricLineChange"
 				>
-					<picker-view-column class="lyric-player-container">
+					<scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="lyric-player-container" style="height:100%">
 						<view class="lyric-time-line-item-outer {{current_player_lyric_line_index === index ? 'activated' : ''}}"
-							wx:for="{{6}}"
+							wx:for="{{lyric_orbit_item_array}}"
 							wx:key="index"
 						>
 							<view class="time-wrap-container">
 								<view class="time-text-cell">
-									<text>00:12.000</text>
+									<text>{{item.duration}}</text>
 								</view>
 							</view>
 							<view class="lyric-wrap-container">
-								<view class="lyric-wrap-inner">
-									qwertyuio, asdasdas, ksisnas,qwertyuio, asdasdas, ksisnas.qwertyuio, asdasdas, ksisnas.qwertyuio, asdasdas, ksisnas.
+								<view class="lyric-wrap-inner">{{item.text}}</view>
+							</view>
+						</view>
+					</scroll-view>
+				</view>
+
+			<view class="fixed-bottom-player-controller-container" style="background-color:{{theme_bg}}" catch:touchmove="forbidTouchMove">
+				<view class="single-line-lyric-scroller-align">
+					<view class="single-line-lyric-scroller" style="overflow-y:hidden">
+						<view class="lyric-scroller-container">
+							<view class="inner"style="transform:translateY(-{{45 * current_orbit_line_index}}px)">
+								<view class="lyric-scroller-item"
+									wx:for="{{lyric_orbit_item_array}}"
+									wx:key="index"
+								>
+									<scroll-view scroll-x="{{true}}" enable-flex="{{true}}" scroll-y="{{false}}" scroll-into-view="{{current_orbit_line_index === index ? 'l-' + index : ''}}" scroll-with-animation="{{true}}">
+										<view style="white-space:nowrap">{{item.text}}<text id="l-{{index}}"></text></view>
+									</scroll-view>
 								</view>
 							</view>
 						</view>
-					</picker-view-column>
-				</picker-view> -->
+						<view class="edit-this-line-lyric-button">
+							<mp-icon icon="pencil" type="outline" color="{{theme_status}}"></mp-icon>
+						</view>
+					</view>
+				</view>
+				<view class="controller-bar" bindtouchstart="updateOrbitButtonXPosition">
+					<view class="lyric-periods-container" id="orbit-bar">
+						<view class="orbit">
+							<view
+								wx:for="{{lyric_orbit_item_array}}"
+								wx:key="index"
+								class="{{item.text === '' || item.text === '___PRE_LINE___' || item.text === '___END_LINE___' ? '' : 'has-lyric-period'}}"
+								style="flex:{{item.duration}};"
+							>
+								<!-- <a wx:if="{{current_orbit_line_index === index}}" /> -->
+							</view>
+						</view>
+					</view>
+					<movable-area>
+						<movable-view disabled="{{lyric_orbit_item_array.length === 0}}" animation="{{false}}" bindchange="handleControllerBtnMove" x="{{controller_button_x}}" direction="horizontal" >
+							<view class="slide-button">
+								<view class="progress-bar-align" />
+							</view>
+						</movable-view>
+					</movable-area>
+				</view>
+				<view class="controller-status-container">
+					<view class="current-time">{{player_current_time_text}}</view>
+					<view class="duration">{{player_duration_text}}</view>
+				</view>
+				<view class="controller-button-group">
+					<view class="group">
+						<view class="more-button-wrap">
+							<!-- <view class="circle-button circle" bindtap="toChooseMessagePreviewAudio"> -->
+							<view class="circle-button circle" bindtap="toImportLyricFile">
+								<mp-icon icon="download" type="outline" color="{{theme_status}}"></mp-icon>
+							</view>
+						</view>
+						<view class="center-button-wrap">
+							<view wx:if="{{preview_audio_player_status === 0 || preview_audio_player_status === 2 || preview_audio_player_status === 3}}" class="circle-button circle-outlined-button large-button audio-play-button"
+								bindtap="controllerPlay"
+							>
+								<mp-icon icon="play" type="outline" color="{{theme_color}}" size="{{28}}"></mp-icon>
+							</view>
+							<view wx:if="{{preview_audio_player_status === 1}}" class="circle-button circle-outlined-button large-button audio-play-button"
+								bindtap="controllerPause"
+							>
+								<mp-icon icon="pause" type="outline" color="{{theme_color}}" size="{{28}}"></mp-icon>
+							</view>
+						</view>
+						<view class="sub-button-wrap">
+							<view class="circle-button">
+								<mp-icon icon="more" type="outline" color="{{theme_status}}"></mp-icon>
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
 			</swiper-item>
 		</swiper>
 
-		<view class="absolute-fill-countdown-layer" style="display:{{countdown_layer_showing ? 'felx' : 'none'}}">
+		<view class="absolute-fill-countdown-layer" style="display:{{countdown_layer_showing ? 'flex' : 'none'}}">
 			<view 
 				wx:for="{{total_count}}"
 				wx:key="index"

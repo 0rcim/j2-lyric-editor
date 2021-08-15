@@ -8,6 +8,6 @@ export default class LyricLines {
 		this.inf = inf;
 	};
 	getLyricLines () {
-		return ['___PRE_LINE___', ...this.lyric_group];
+		return ['___PRE_LINE___', ...this.lyric_group, '___END_LINE___'];
 	}
 }
