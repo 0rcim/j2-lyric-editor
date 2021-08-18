@@ -1,6 +1,6 @@
 module.exports = {
 	chooseMessageFileAsBgAudio () {
-		const valid_ext = ["flac", "mp3", "ogg", "aac", "m4a", "amr"];
+		const valid_ext = ["flac", "mp3", "ogg", "aac", "m4a", "amr", "mov"];
 		return new Promise((resolve, reject) => {
 			wx.chooseMessageFile(
 				{

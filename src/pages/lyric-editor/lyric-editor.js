@@ -4,6 +4,7 @@ import LyricTimeLines from "../../libs/LyricTimeLines";
 import fecha from "../../plugins/fecha";
 import {EXACT_STOP_WATCH_MASK, FILE_EXT_DATE_MASK, STOP_WATCH_MASK} from "../../libs/fecha.mask";
 import WxBgAudioPlayer from "../../libs/WxBgAudioPlayer";
+import WxAudioFragmentPlayer from "../../libs/WxAudioFragmentPlayer";
 
 Page(
 	{
@@ -20,7 +21,7 @@ Page(
 			audio_round_progress_bg_img_style_text: "",
 			audio_duration_time_text: "",
 			bg_audio_player: null,
-			swiper_current_index: 0,
+			swiper_current_index: 1,
 			lyrics: [],
 			current_line_idx: 0,
 			COUNTDOWN_NUM: 1,
@@ -29,9 +30,11 @@ Page(
 			current_recording_line_idx: 0,
 			lyric_line_stamps: [],
 			// action-music-lyric-previewer
+			isControllerHide: false,
 			lyric_time_lines: [],
 			current_player_lyric_line_index: 0,
 			lyric_orbit_item_array: [],
+			lyric_audio_part_array: [],
 			orbit_bd_rect: null,
 			controller_button_x: 0,
 			current_orbit_line_index: 0,
@@ -52,7 +55,6 @@ Page(
 			const has_temp_lyric_lines = getApp().globalData.temp_lyric_lines instanceof LyricLines;
 			const has_temp_lyric_time_lines = getApp().globalData.temp_lyric_time_lines instanceof LyricTimeLines;
 			if (has_temp_lyric_lines) {
-				this.showLoadingToast();
 				let lyric_lines = getApp().globalData.temp_lyric_lines;
 				this.setData(
 					{
@@ -318,6 +320,21 @@ Page(
 					}
 				);
 				console.log("playing music:", tempFile);
+				// ===
+				const wx_audio_fragment_player = new WxAudioFragmentPlayer(tempFile);
+				getApp().globalData.wx_audio_fragment_player = wx_audio_fragment_player;
+				that.showLoadingToast("正在处理音频");
+				wx_audio_fragment_player.getAudioBufferParts(
+					getApp().globalData.temp_lyric_time_lines
+				)
+				.then(res => {
+					that.setData(
+						{lyric_audio_part_array: getApp().globalData.temp_lyric_time_lines.getEveryLyricDurationMap()}
+					);
+					getApp().globalData.temp_audio_fragment_buffer_parts = res;
+					console.log(res)
+					that.hideLoadingToast();
+				});
 			})
 			.catch(err => {
 				if ("err_msg" in err) 
@@ -325,7 +342,18 @@ Page(
 				console.log(err);
 			})
 		},
+		playAudioParts (event) {
+			const {partId} = event.currentTarget.dataset;
+			const {temp_audio_fragment_buffer_parts: buffer_parts} = getApp().globalData;
+			const {wx_audio_fragment_player} = getApp().globalData;
+			wx_audio_fragment_player.playFrag(buffer_parts, partId);
+		},
 		// action-music-lyric-player
+		togglePlayerController () {
+			this.setData(
+				{isControllerHide: !this.data.isControllerHide}
+			);
+		},
 		bindTouchSwiping (event) {
 			this.getBdWidth(".action-container");
 			// this.animation.opacity().step();
@@ -337,7 +365,7 @@ Page(
 			const lyric_total_duration = getApp().globalData.temp_lyric_time_lines.getLyricTotalDuration();
 			const {x, source} = event.detail;
 			if (x >= this.data.orbit_bd_rect.width) {
-				getApp().globalData.wx_preview_audio_player.stop(this);
+				this.data.preview_audio_player.stop(this);
 			}
 
 			const current_progress = lyric_total_duration * x / this.data.orbit_bd_rect.width;

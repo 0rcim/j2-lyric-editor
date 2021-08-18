@@ -86,24 +86,46 @@
 					mask-class="player-mask"
 					bindchange="bindPlayerLyricLineChange"
 				>
-					<scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="lyric-player-container" style="height:100%">
-						<view class="lyric-time-line-item-outer {{current_player_lyric_line_index === index ? 'activated' : ''}}"
-							wx:for="{{lyric_orbit_item_array}}"
+					<scroll-view 
+						scroll-into-view="{{'lp' + current_orbit_line_index}}" 
+						scroll-x="{{false}}" 
+						scroll-y="{{true}}" 
+						class="lyric-player-container" 
+						style="height:100%{{isControllerHide ? ';padding-top:45px' : ''}}"
+						scroll-with-animation="{{false}}"
+					>
+						<view class="import-preview-audio-container" bindtap="toChooseMessageBgAudio">
+							<view class="button">
+								<text>选择播放音频</text>
+							</view>
+						</view>
+						<view class="lyric-time-line-item-outer {{current_orbit_line_index === index ? 'activated' : ''}}"
+							wx:for="{{lyric_audio_part_array}}"
 							wx:key="index"
+							id="{{'lp' + index}}"
 						>
 							<view class="time-wrap-container">
 								<view class="time-text-cell">
-									<text>{{item.duration}}</text>
+									<text>{{index + 1}}/{{item.start_time_text}}</text>
 								</view>
 							</view>
 							<view class="lyric-wrap-container">
-								<view class="lyric-wrap-inner">{{item.text}}</view>
+								<view class="lyric-wrap-inner">{{item.text || "-"}}</view>
+							</view>
+							<view class="play-audio-duration-wrap" 
+								catch:touchmove="forbidTouchMove"
+								bindtap="playAudioParts"
+								data-part-id="{{index}}"
+							>
+								<view class="play-audio-duration circle-button">
+									<mp-icon type="field" icon="volume-up" color="{{theme_status}}" size="{{14}}"></mp-icon>
+								</view>
 							</view>
 						</view>
 					</scroll-view>
 				</view>
 
-			<view class="fixed-bottom-player-controller-container" style="background-color:{{theme_bg}}" catch:touchmove="forbidTouchMove">
+			<view class="fixed-bottom-player-controller-container {{isControllerHide ? 'hide-controller' : ''}}" style="background-color:{{theme_bg}}" catch:touchmove="forbidTouchMove">
 				<view class="single-line-lyric-scroller-align">
 					<view class="single-line-lyric-scroller" style="overflow-y:hidden">
 						<view class="lyric-scroller-container">
@@ -112,14 +134,14 @@
 									wx:for="{{lyric_orbit_item_array}}"
 									wx:key="index"
 								>
-									<scroll-view scroll-x="{{true}}" enable-flex="{{true}}" scroll-y="{{false}}" scroll-into-view="{{current_orbit_line_index === index ? 'l-' + index : ''}}" scroll-with-animation="{{true}}">
+									<scroll-view scroll-x="{{true}}" enable-flex="{{true}}" scroll-y="{{false}}" scroll-into-view="{{'l-' + current_orbit_line_index}}" scroll-with-animation="{{true}}">
 										<view style="white-space:nowrap">{{item.text}}<text id="l-{{index}}"></text></view>
 									</scroll-view>
 								</view>
 							</view>
 						</view>
-						<view class="edit-this-line-lyric-button">
-							<mp-icon icon="pencil" type="outline" color="{{theme_status}}"></mp-icon>
+						<view class="hide-player-controller-button" bind:tap="togglePlayerController">
+							<mp-icon icon="max-window" type="outline" color="{{theme_status}}"></mp-icon>
 						</view>
 					</view>
 				</view>
@@ -218,5 +240,11 @@
 	<view class="weui-mask_transparent"></view>
 	<view class="weui-toast weui-toast_text">
 		<view class="weui-toast__content">{{text_toast_msg}}</view>
+	</view>
+</view>
+<view class="fadeIn" wx:if="{{loading_toast}}">
+	<view class="weui-mask_transparent"></view>
+	<view class="weui-toast weui-toast_text">
+		<view class="weui-toast__content">{{loading_msg}}</view>
 	</view>
 </view>

@@ -1,4 +1,5 @@
 import fecha from "../plugins/fecha";
+import { EXACT_STOP_WATCH_MASK } from "./fecha.mask";
 
 export default class LyricTimeLines {
 	origin_lyric_arr;
@@ -25,6 +26,7 @@ export default class LyricTimeLines {
 			return (
 				{
 					start_time: time,
+					start_time_text: fecha.format(new Date(time), EXACT_STOP_WATCH_MASK),
 					text: text,
 					duration: (arr[index + 1]?.time - time) || 0
 				}
