@@ -8,9 +8,9 @@ App(
 			theme: "light",
 			fsm: null,
 			temp_text_file_parser: null,
-			temp_lyric_lines: null || require("./libs/test_things").lyric_lines,
+			temp_lyric_lines: null/*  || require("./libs/test_things").lyric_lines */,
 			wx_bg_audio_player: null,
-			temp_lyric_time_lines: null || require("./libs/test_things").lyric_time_lines,
+			temp_lyric_time_lines: null/*  || require("./libs/test_things").lyric_time_lines */,
 			wx_audio_fragment_player: null,
 			temp_audio_fragment_buffer_parts: null
 		},

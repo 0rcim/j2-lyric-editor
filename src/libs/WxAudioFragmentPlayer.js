@@ -67,12 +67,17 @@ export default class WxAudioFragmentPlayer {
 			)
 		);
 	};
-	playFrag (buffer_parts, partId) {
+	playFrag (buffer_parts, partId, onEnded) {
 		this.source = this.web_audio_ctx.createBufferSource();
+		this.source.onended = typeof onEnded === "function" ? onEnded : null;
 		this.source.buffer = buffer_parts[partId];
 		this.source.connect(this.web_audio_ctx.destination);
 		this.prev_source && this.prev_source.stop();
 		this.source.start();
 		this.prev_source = this.source;
+	};
+	stopFrag () {
+		this.prev_source && this.prev_source.stop();
+		this.prev_source = null;
 	}
 }

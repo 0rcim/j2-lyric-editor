@@ -3,13 +3,16 @@ import {STOP_WATCH_MASK} from "../libs/fecha.mask";
 
 export default class WxBgAudioPlayer {
 	audio_ctx = null;
+	file = {};
 	audio_full_file_name;
 	round_progress_bg_img_data_key;
 	duration_time_data_key;
 	player_status_code_data_key;
 	// ===
 	upd_progress_timer;
-	constructor ({name="", path, size, time, type}) {
+	constructor (file) {
+		const {name="", path, size, time, type} = file;
+		this.file = file;
 		this.audio_ctx = wx.createInnerAudioContext({useWebAudioImplement: false});
 		this.audio_ctx.src = path;
 		this.audio_full_file_name = name;
@@ -17,10 +20,13 @@ export default class WxBgAudioPlayer {
 	destroy () {
 		this.audio_ctx.destroy();
 	};
-
+	msSeek (position=0) {
+		this.audio_ctx.seek(position / 1000);
+	};
 	startPlay (page_this, on_end_callback, every_tick_etx_data) {
 		let that = this;
 		this.audio_ctx.play();
+		clearInterval(this.upd_progress_timer);
 		this.upd_progress_timer = setInterval(
 			() => {
 				page_this.setData(
@@ -37,7 +43,7 @@ export default class WxBgAudioPlayer {
 						}
 						: undefined,
 						that.duration_time_data_key && that.audio_ctx.duration > 0
-							? {[that.duration_time_data_key]: ' / ' + fecha.format(new Date((that.audio_ctx.duration) * 1000), STOP_WATCH_MASK)}
+							? {[that.duration_time_data_key]: ' / ' + fecha.format(new Date((that.audio_ctx.duration || 0) * 1000), STOP_WATCH_MASK)}
 							: undefined,
 						that.player_status_code_data_key && page_this.data[that.player_status_code_data_key] !== 1 
 							? {[that.player_status_code_data_key]: 1}
@@ -72,7 +78,7 @@ export default class WxBgAudioPlayer {
 					page_this.setData(
 						{
 							[that.duration_time_data_key]: 
-							' / ' + fecha.format(new Date(that.audio_ctx.duration * 1000), STOP_WATCH_MASK),
+							' / ' + fecha.format(new Date((that.audio_ctx.duration || 0) * 1000), STOP_WATCH_MASK),
 							[that.player_status_code_data_key]: 0
 						}
 					);

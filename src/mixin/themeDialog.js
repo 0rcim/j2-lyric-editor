@@ -6,7 +6,8 @@ module.exports = {
 		shade_close: true,
 		dialog_btn_group: [
 			{
-				dialog_btn_type: "default",
+				text: "取消",
+				type: "default",
 				tap_event_name: "__close_dialog__"
 			}
 		]

@@ -4,7 +4,9 @@ import LyricTimeLines from "../../libs/LyricTimeLines";
 import fecha from "../../plugins/fecha";
 import {EXACT_STOP_WATCH_MASK, FILE_EXT_DATE_MASK, STOP_WATCH_MASK} from "../../libs/fecha.mask";
 import WxBgAudioPlayer from "../../libs/WxBgAudioPlayer";
+import LyricPlayer from "../../libs/LyricPlayer";
 import WxAudioFragmentPlayer from "../../libs/WxAudioFragmentPlayer";
+import { EL, PL } from "../../libs/LyricLines.const";
 
 Page(
 	{
@@ -13,15 +15,17 @@ Page(
 			require("../../mixin/messageToast"),
 			require("../../mixin/coutdownAnimation"),
 			require("../../mixin/themeDialog"),
+			require("../../mixin/themeActionSheet"),
 			require("../../mixin/lyricEditorTimerUtil"),
 			require("../../mixin/readingAsBgAudio"),
 			require("../../mixin/readingLrcFile")
 		],
 		data: {
+			EL, PL,
 			audio_round_progress_bg_img_style_text: "",
 			audio_duration_time_text: "",
 			bg_audio_player: null,
-			swiper_current_index: 1,
+			swiper_current_index: 0,
 			lyrics: [],
 			current_line_idx: 0,
 			COUNTDOWN_NUM: 1,
@@ -44,11 +48,14 @@ Page(
 			player_duration_text: "",
 			preview_audio_player: null,
 			preview_audio_player_status:
-				0/* 0 等待播放；1 正在播放；2 播放暂停；3 播放结束 */
+				0, /* 0 等待播放；1 正在播放；2 播放暂停；3 播放结束 */
+			now_playing_audio_part_line_idx: -1
 		},
 		onShow () {
 			this.setData(
-				{orbit_bd_rect: new WxBoundingRect("#orbit-bar")}
+				{
+					orbit_bd_rect: new WxBoundingRect("#orbit-bar")
+				}
 			);
 		},
 		onLoad () {
@@ -71,6 +78,7 @@ Page(
 				this.setData(
 					{
 						lyric_orbit_item_array: lyric_time_lines.getEveryLyricDurationMap(),
+						lyric_audio_part_array: lyric_time_lines.getEveryLyricDurationMap(),
 						player_duration_text: fecha.format(new Date(lyric_time_lines.getLyricTotalDuration()), STOP_WATCH_MASK)
 					}
 				);
@@ -78,7 +86,6 @@ Page(
 		},
 		// actoin-recording-lyric
 		bindCurrentActionContainerChange (event) {
-			console.log('swiper change->', event)
 			const {current, source} = event.detail;
 			source === "touch" && this.setData(
 				{swiper_current_index: current}
@@ -130,6 +137,9 @@ Page(
 			}
 		},
 		openConfirmUseBackgroundAudioDialog (event) {
+			this.setData(
+				{lyric_line_stamps: []}
+			);
 			this.data.never_open_confirm_use_background_audio_dialog
 			? this.playCountdownAnimate(event)
 			: this.data.recording_status === 3
@@ -226,7 +236,7 @@ Page(
 							tap_event_name: "resetLyricEditor"
 						},
 						{
-							text: "预览并微调",
+							text: "预览",
 							type: "primary",
 							tap_event_name: "switchLyricPlayer"
 						},
@@ -244,8 +254,7 @@ Page(
 				{
 					recording_status: 0,
 					current_recording_line_idx: 0,
-					current_line_idx: 0,
-					// lyric_line_stamps: []
+					current_line_idx: 0
 				}
 			);
 			wx.nextTick(
@@ -265,26 +274,33 @@ Page(
 			;
 			this.resetLyricEditor(
 				() => {
-					that.setData(
-						{
-							lyric_orbit_item_array: lyric_time_lines.getEveryLyricDurationMap(),
-							player_duration_text: 
-								fecha.format(new Date(lyric_time_lines.getLyricTotalDuration()), STOP_WATCH_MASK),
-							swiper_current_index: 1,
-							player_current_time_text: "00:00"
+					this.resetPreviewPlayer();
+					wx.nextTick(
+						() =>{
+							that.setData(
+								{
+									lyric_orbit_item_array: lyric_time_lines.getEveryLyricDurationMap(),
+									player_duration_text: 
+										fecha.format(new Date(lyric_time_lines.getLyricTotalDuration()), STOP_WATCH_MASK),
+									swiper_current_index: 1,
+									player_current_time_text: "00:00",
+									preview_audio_player: that.makeLyricPlayer(),
+									lyric_audio_part_array: lyric_time_lines.getEveryLyricDurationMap()
+								}
+							);
+							wx.nextTick(
+								() => {
+									if (typeof wx.createWebAudioContext === "function" && getApp().globalData.wx_bg_audio_player?.file) {
+										that.applyWxAudioFragment(getApp().globalData.wx_bg_audio_player.file);
+									}
+								}
+							);
 						}
 					);
 				}
 			);
 		},
 		makeLyricTimeFileText () {
-			// let temp_arr = [];
-			// for (let text of this.data.lyrics.filter(item => item !== '___PRE_LINE___')) {
-			// 	temp_arr.push(
-			// 		{text, time: this.data.lyric_line_stamps[temp_arr.length]}
-			// 	);
-			// }
-			// console.log(temp_arr);
 			let lyric_time_lines = new LyricTimeLines(
 				this.data.lyrics, this.data.lyric_line_stamps
 			);
@@ -314,27 +330,7 @@ Page(
 					"audio_duration_time_text"
 				);
 				// ===
-				that.setData(
-					{
-						preview_audio_player: that.makeWxPreviewAudioPlayer(tempFile),
-					}
-				);
 				console.log("playing music:", tempFile);
-				// ===
-				const wx_audio_fragment_player = new WxAudioFragmentPlayer(tempFile);
-				getApp().globalData.wx_audio_fragment_player = wx_audio_fragment_player;
-				that.showLoadingToast("正在处理音频");
-				wx_audio_fragment_player.getAudioBufferParts(
-					getApp().globalData.temp_lyric_time_lines
-				)
-				.then(res => {
-					that.setData(
-						{lyric_audio_part_array: getApp().globalData.temp_lyric_time_lines.getEveryLyricDurationMap()}
-					);
-					getApp().globalData.temp_audio_fragment_buffer_parts = res;
-					console.log(res)
-					that.hideLoadingToast();
-				});
 			})
 			.catch(err => {
 				if ("err_msg" in err) 
@@ -343,10 +339,31 @@ Page(
 			})
 		},
 		playAudioParts (event) {
+			let that = this;
+			this.controllerPause();
 			const {partId} = event.currentTarget.dataset;
 			const {temp_audio_fragment_buffer_parts: buffer_parts} = getApp().globalData;
 			const {wx_audio_fragment_player} = getApp().globalData;
-			wx_audio_fragment_player.playFrag(buffer_parts, partId);
+			if (partId === this.data.now_playing_audio_part_line_idx) {
+				this.setData(
+					{now_playing_audio_part_line_idx: -1}
+				);
+				wx_audio_fragment_player.stopFrag();
+			} else {
+				this.setData(
+					{now_playing_audio_part_line_idx: partId}
+				);
+				wx_audio_fragment_player.playFrag(
+					buffer_parts, 
+					partId,
+					() => {
+						that.now_playing_audio_part_line_idx === partId
+						&& that.setData(
+							{now_playing_audio_part_line_idx: -1}
+						);
+					}
+				);
+			}
 		},
 		// action-music-lyric-player
 		togglePlayerController () {
@@ -362,10 +379,14 @@ Page(
 		},
 		forbidTouchMove () {},
 		handleControllerBtnMove (event) {
-			const lyric_total_duration = getApp().globalData.temp_lyric_time_lines.getLyricTotalDuration();
 			const {x, source} = event.detail;
+			const lyric_total_duration = getApp().globalData.temp_lyric_time_lines.getLyricTotalDuration();
 			if (x >= this.data.orbit_bd_rect.width) {
-				this.data.preview_audio_player.stop(this);
+				console.log("lyric end ... ->", this.data.preview_audio_player);
+				this.data.preview_audio_player?.stop(this);
+				this.setData(
+					{player_current_time: 0}
+				);
 			}
 
 			const current_progress = lyric_total_duration * x / this.data.orbit_bd_rect.width;
@@ -375,7 +396,7 @@ Page(
 			player_current_time_text !== this.data.player_current_time_text
 			&& this.setData(
 				{
-					player_current_time: current_progress,
+					player_current_time: Math.round(current_progress),
 					player_current_time_text
 
 				}
@@ -384,27 +405,37 @@ Page(
 				this.setData({current_orbit_line_index: idx});
 			}
 		},
-		// scaleOutSlideButton () {
-		// 	this.data.scale_controller_btn || this.setData(
-		// 		{scale_controller_btn: true}
-		// 	);
-		// },
 		updateOrbitButtonXPosition (event) {
-			if (this.data.lyric_orbit_item_array.length === 0) return;
+			if (this.data.lyric_orbit_item_array.length === 0 || this.data.preview_audio_player_status === 1) return;
 			const [{pageX}] = event.touches;
 			const {offsetLeft} = event.currentTarget;
 			this.setData(
 				{controller_button_x: pageX - offsetLeft - 10}
 			);
 		},
-		// handleControllerButtonTouchEnd () {
-		// 	this.setData(
-		// 		{scale_controller_btn: false}
-		// 	);
-		// }
+		makeLyricPlayer () {
+			const preview_audio_player = 
+				getApp().globalData.wx_preview_audio_player = 
+				new LyricPlayer(getApp().globalData.temp_lyric_time_lines)
+			;
+			preview_audio_player.setDurationTimeTextDataKeyName(
+				"player_duration_text"
+			);
+			preview_audio_player.setPlayerStatusCodeDataKeyName(
+				"preview_audio_player_status"
+			);
+			preview_audio_player.audio_ctx.__on_ended = () => {
+				console.log(".....")
+				this.setData(
+					{controller_button_x: this.data.orbit_bd_rect.width}
+				);
+			}
+			console.log("preview_audio_player->", preview_audio_player);
+			return preview_audio_player;
+		},
 		makeWxPreviewAudioPlayer (tempFile) {
 			let wx_preview_audio_player = 
-				getApp().globalData.wx_bg_audio_player = 
+				getApp().globalData.wx_preview_audio_player = 
 				new WxBgAudioPlayer(tempFile)
 			;
 			wx_preview_audio_player.setDurationTimeTextDataKeyName(
@@ -414,6 +445,52 @@ Page(
 				"preview_audio_player_status"
 			);
 			return wx_preview_audio_player;
+		},
+		resetPreviewPlayer () {
+			// this.data.preview_audio_player
+			// && this.data.preview_audio_player.destroy();
+			this.setData(
+				{
+					preview_audio_player: this.makeLyricPlayer(),
+					player_current_time: 0,
+					controller_button_x: 0,
+					player_current_time_text: "00:00",
+					preview_audio_player_status: 0
+				}
+			);
+		},
+		recoverPageData () {
+			this.data.preview_audio_player?.stop(this);
+			this.resetPreviewPlayer();
+			this.resetLyricEditor();
+			wx.nextTick(
+				() => {
+					this.setData(
+						{
+							swiper_current_index: 0,
+							player_current_time: 0
+						}
+					);
+				}
+			);
+		},
+		openMoreOptsActionSheet () {
+			this.openActionSheet(
+				{
+					title: "更多操作…",
+					menu_list:
+					[
+						{
+							text: "清除音频",
+							tap_event_name: "resetPreviewPlayer"
+						},
+						{
+							text: "重新开始录制",
+							tap_event_name: "recoverPageData"
+						}
+					]
+				}
+			);
 		},
 		toImportLyricFile () {
 			this.openDialog(
@@ -441,6 +518,14 @@ Page(
 		},
 		useImportedLyricFile () {
 			let that = this;
+			this.data.preview_audio_player?.stop(this);
+			this.setData(
+				{
+					controller_button_x: 0,
+					current_orbit_line_index: 0,
+					player_current_time: 0
+				}
+			);
 			this.chooseLyricFile()
 			.then(({data}) => {
 				let lyric_time_lines = LyricTimeLines.parseLrcFileStringContent(data);
@@ -451,6 +536,8 @@ Page(
 							that.setData(
 								{
 									lyric_orbit_item_array: lyric_time_lines.getEveryLyricDurationMap(),
+									lyric_audio_part_array: lyric_time_lines.getEveryLyricDurationMap(),
+									preview_audio_player: that.makeLyricPlayer(),
 									player_duration_text: 
 										fecha.format(new Date(lyric_time_lines.getLyricTotalDuration()), STOP_WATCH_MASK),
 										player_current_time_text: "00:00"
@@ -468,17 +555,55 @@ Page(
 				console.error(err);
 			})
 		},
+		applyWxAudioFragment (tempFile) {
+			let that = this;
+			console.log(
+				'wx.createWebAudioContext', wx.createWebAudioContext,
+				'createWebAudioContext in wx', 'createWebAudioContext' in wx,
+				'wx.canIUse img.src', wx.canIUse("Image.src"),
+				'wx.canIUse createWebAudioContext', wx.canIUse("createWebAudioContext")
+			);
+			const wx_audio_fragment_player = new WxAudioFragmentPlayer(tempFile);
+			getApp().globalData.wx_audio_fragment_player = wx_audio_fragment_player;
+			that.showLoadingToast("正在处理音频");
+			wx_audio_fragment_player.getAudioBufferParts(
+				getApp().globalData.temp_lyric_time_lines
+			)
+			.then(res => {
+				that.setData(
+					{
+						lyric_audio_part_array: 
+						getApp().globalData.temp_lyric_time_lines.getEveryLyricDurationMap()
+						.map(item => ({...item, frag: true}))
+					}
+				);
+				getApp().globalData.temp_audio_fragment_buffer_parts = res;
+				console.log(res)
+				that.hideLoadingToast();
+			})
+			.catch(err => {
+				that.hideLoadingToast();
+				console.log(err);
+			});
+		},
 		toChooseMessagePreviewAudio () {
 			let that = this;
 			if (this.data.preview_audio_player_status === 0) {
 				this.chooseMessageFileAsBgAudio()
 				.then(res => {
 					const {tempFiles: [tempFile]} = res;
+					let wx_bg_audio_player = 
+						getApp().globalData.wx_bg_audio_player = 
+						new WxBgAudioPlayer(tempFile)
+					;
 					that.setData(
 						{
 							preview_audio_player: that.makeWxPreviewAudioPlayer(tempFile),
 						}
 					);
+					if (typeof wx.createWebAudioContext === "function") {
+						that.applyWxAudioFragment(tempFile);
+					}
 				})
 				.catch(err => {
 					if ("err_msg" in err) 
@@ -496,29 +621,31 @@ Page(
 			const lyric_total_duration = getApp().globalData.temp_lyric_time_lines?.getLyricTotalDuration() || [];
 			if (lyric_total_duration.length === 0) {
 				return this.showTextToast({msg: "没有可播放的歌词文件"});
-			} 
-			if (this.data.preview_audio_player) {
-				this.data.preview_audio_player.startPlay(
-					this, 
-					null,
-					(currentTime) => {
-						return (
-							{
-								// player_current_time_text: fecha.format(new Date(currentTime * 1000), EXACT_STOP_WATCH_MASK),
-
-								controller_button_x: currentTime / lyric_total_duration * 1000 * that.data.orbit_bd_rect.width
-							}
-						)
-					}
-				);
-			} else {
-				this.showTextToast(
-					{msg: "没有可播放的音频文件"}
-				);
 			}
+			this.data.preview_audio_player instanceof LyricPlayer
+			&&
+			this.setData(
+				{preview_audio_player: that.data.bg_audio_player?.file ? this.makeWxPreviewAudioPlayer(that.data.bg_audio_player.file) : this.makeLyricPlayer()}
+			);
+			wx.nextTick(
+				() => {
+					that.data.preview_audio_player.msSeek(that.data.player_current_time);
+					that.data.preview_audio_player.startPlay(
+						that, 
+						null,
+						(currentTime) => {
+							return (
+								{
+									controller_button_x: Math.round(currentTime / lyric_total_duration * 1000 * that.data.orbit_bd_rect.width)
+								}
+							)
+						}
+					);
+				}
+			);
 		},
 		controllerPause () {
-			let wx_preview_audio_player = getApp().globalData.wx_bg_audio_player;
+			let wx_preview_audio_player = this.data.preview_audio_player;
 			wx_preview_audio_player && wx_preview_audio_player.pause(this);
 			this.setData(
 				{preview_audio_player_status: 2}

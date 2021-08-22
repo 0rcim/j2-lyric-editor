@@ -1,3 +1,4 @@
+import { PL, EL } from "./LyricLines.const";
 export default class LyricLines {
 	lyric_group = [];
 	inf = {};
@@ -8,6 +9,6 @@ export default class LyricLines {
 		this.inf = inf;
 	};
 	getLyricLines () {
-		return ['___PRE_LINE___', ...this.lyric_group, '___END_LINE___'];
+		return [PL, ...this.lyric_group, EL];
 	}
 }

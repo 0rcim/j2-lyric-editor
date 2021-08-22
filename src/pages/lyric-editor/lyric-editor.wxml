@@ -10,8 +10,8 @@
 		</view>
 		<scroll-view enable-flex="{{true}}" enhanced="{{true}}" show-scroll-bar="{{false}}" scroll-x="{{true}}" scroll-y="{{false}}" style="height:50px;position:relative;background-color:{{theme_bg}}">
 			<view class="full-lyric">
-				<text wx:if="{{lyrics[current_line_idx] !== '' && lyrics[current_line_idx] !== '___PRE_LINE___' && lyrics[current_line_idx] !== '___END_LINE___'}}">{{lyrics[current_line_idx] || ''}}</text>
-				<text wx:else style="color:{{theme_status}};opacity: .35">{{lyrics[current_line_idx] === '___PRE_LINE___' ? '预备行' : lyrics[current_line_idx] === '___END_LINE___' ? '尾行' : '空白行'}}</text>
+				<text wx:if="{{lyrics[current_line_idx] !== '' && lyrics[current_line_idx] !== PL && lyrics[current_line_idx] !== EL}}">{{lyrics[current_line_idx] || ''}}</text>
+				<text wx:else style="color:{{theme_status}};opacity: .35">{{lyrics[current_line_idx] === PL ? '预备行' : lyrics[current_line_idx] === EL ? '尾行' : '空白行'}}</text>
 			</view>
 		</scroll-view>
 	</view>
@@ -33,7 +33,7 @@
 				>
 					<picker-view-column class="lyric-scroller-container">
 						<view wx:for="{{lyrics}}" class="outer {{current_line_idx === index ? 'activated' : ''}}" wx:key="index">
-							<view class="lyric-item {{index < current_recording_line_idx ? 'recorded' : ''}} {{current_recording_line_idx === index ? 'recording' : ''}}">{{item === '___PRE_LINE___' || item === '___END_LINE___' ? '' : item}}</view>
+							<view class="lyric-item {{index < current_recording_line_idx ? 'recorded' : ''}} {{current_recording_line_idx === index ? 'recording' : ''}}">{{item === PL || item === EL ? '' : item}}</view>
 						</view>
 					</picker-view-column>
 				</picker-view>
@@ -94,10 +94,13 @@
 						style="height:100%{{isControllerHide ? ';padding-top:45px' : ''}}"
 						scroll-with-animation="{{false}}"
 					>
-						<view class="import-preview-audio-container" bindtap="toChooseMessageBgAudio">
+						<view wx:if="{{lyric_audio_part_array.length > 0}}" class="import-preview-audio-container" bindtap="toChooseMessagePreviewAudio">
 							<view class="button">
 								<text>选择播放音频</text>
 							</view>
+						</view>
+						<view wx:if="{{lyric_audio_part_array.length === 0}}" class="no-lyric">
+							<text>没有要预览的歌词</text>
 						</view>
 						<view class="lyric-time-line-item-outer {{current_orbit_line_index === index ? 'activated' : ''}}"
 							wx:for="{{lyric_audio_part_array}}"
@@ -110,15 +113,16 @@
 								</view>
 							</view>
 							<view class="lyric-wrap-container">
-								<view class="lyric-wrap-inner">{{item.text || "-"}}</view>
+								<view class="lyric-wrap-inner">{{item.text === PL || item.text === EL || !item.text ? "-" : item.text}}</view>
 							</view>
-							<view class="play-audio-duration-wrap" 
+							<view wx:if="{{preview_audio_player && item.frag}}" class="play-audio-duration-wrap" 
 								catch:touchmove="forbidTouchMove"
 								bindtap="playAudioParts"
 								data-part-id="{{index}}"
 							>
 								<view class="play-audio-duration circle-button">
-									<mp-icon type="field" icon="volume-up" color="{{theme_status}}" size="{{14}}"></mp-icon>
+									<mp-icon wx:if="{{now_playing_audio_part_line_idx === index}}" type="field" icon="pause" color="{{theme_status}}" size="{{14}}"></mp-icon>
+									<mp-icon wx:else type="field" icon="volume-up" color="{{theme_status}}" size="{{14}}"></mp-icon>
 								</view>
 							</view>
 						</view>
@@ -135,7 +139,7 @@
 									wx:key="index"
 								>
 									<scroll-view scroll-x="{{true}}" enable-flex="{{true}}" scroll-y="{{false}}" scroll-into-view="{{'l-' + current_orbit_line_index}}" scroll-with-animation="{{true}}">
-										<view style="white-space:nowrap">{{item.text}}<text id="l-{{index}}"></text></view>
+										<view style="white-space:nowrap">{{item.text === PL || item.text === EL || !item.text ? "-" : item.text}}<text id="l-{{index}}"></text></view>
 									</scroll-view>
 								</view>
 							</view>
@@ -151,7 +155,7 @@
 							<view
 								wx:for="{{lyric_orbit_item_array}}"
 								wx:key="index"
-								class="{{item.text === '' || item.text === '___PRE_LINE___' || item.text === '___END_LINE___' ? '' : 'has-lyric-period'}}"
+								class="{{item.text === '' || item.text === PL || item.text === EL ? '' : 'has-lyric-period'}}"
 								style="flex:{{item.duration}};"
 							>
 								<!-- <a wx:if="{{current_orbit_line_index === index}}" /> -->
@@ -159,7 +163,13 @@
 						</view>
 					</view>
 					<movable-area>
-						<movable-view disabled="{{lyric_orbit_item_array.length === 0}}" animation="{{false}}" bindchange="handleControllerBtnMove" x="{{controller_button_x}}" direction="horizontal" >
+						<movable-view 
+							direction="horizontal"
+							animation="{{false}}" 
+							disabled="{{lyric_orbit_item_array.length === 0 || preview_audio_player_status === 1}}" 
+							x="{{controller_button_x}}" 
+							bindchange="handleControllerBtnMove"
+						>
 							<view class="slide-button">
 								<view class="progress-bar-align" />
 							</view>
@@ -172,9 +182,8 @@
 				</view>
 				<view class="controller-button-group">
 					<view class="group">
-						<view class="more-button-wrap">
-							<!-- <view class="circle-button circle" bindtap="toChooseMessagePreviewAudio"> -->
-							<view class="circle-button circle" bindtap="toImportLyricFile">
+						<view class="to-import-lyric-button-wrap">
+							<view class="circle-button" bindtap="toImportLyricFile">
 								<mp-icon icon="download" type="outline" color="{{theme_status}}"></mp-icon>
 							</view>
 						</view>
@@ -190,7 +199,7 @@
 								<mp-icon icon="pause" type="outline" color="{{theme_color}}" size="{{28}}"></mp-icon>
 							</view>
 						</view>
-						<view class="sub-button-wrap">
+						<view class="more-button-wrap" bindtap="openMoreOptsActionSheet">
 							<view class="circle-button">
 								<mp-icon icon="more" type="outline" color="{{theme_status}}"></mp-icon>
 							</view>
@@ -246,5 +255,25 @@
 	<view class="weui-mask_transparent"></view>
 	<view class="weui-toast weui-toast_text">
 		<view class="weui-toast__content">{{loading_msg}}</view>
+	</view>
+</view>
+
+<view wx:if="{{is_action_sheet_show}}" class="fadeIn">
+	<view class="weui-mask" style="z-index:5002" bindtap="bindTapActionSheetShade"></view>
+	<view class="weui-actionsheet weui-actionsheet_toggle" style="z-index:5003">
+		<view class="weui-actionsheet__title">
+			<view class="weui-actionsheet__title-text">{{action_sheet_title}}</view>
+		</view>
+		<view class="weui-actionsheet__menu">
+			<view class="weui-actionsheet__cell {{item.type ? 'weui-actionsheet__cell_' + item.type : ''}}"
+				wx:for="{{action_menu_list}}"
+				wx:key="index"
+				data-tap-event-name="{{item.tap_event_name}}"
+				bindtap="bindActionSheetTap"
+			>{{item.text}}</view>
+		</view>
+		<view class="weui-actionsheet__action">
+			<view class="weui-actionsheet__cell" bindtap="__close_action_sheet__">取消</view>
+		</view>
 	</view>
 </view>

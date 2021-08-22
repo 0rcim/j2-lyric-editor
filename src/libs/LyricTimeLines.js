@@ -1,5 +1,6 @@
 import fecha from "../plugins/fecha";
 import { EXACT_STOP_WATCH_MASK } from "./fecha.mask";
+import { PL, EL } from "./LyricLines.const";
 
 export default class LyricTimeLines {
 	origin_lyric_arr;
@@ -9,11 +10,11 @@ export default class LyricTimeLines {
 		this.lyric_duration = time_arr[time_arr.length - 1];
 		this.lyric_time_lines = 
 		[
-			{text: '___PRE_LINE___', time: 0},
+			{text: PL, time: 0},
 			...lyric_arr
-			.filter(item => item !== '___PRE_LINE___' && item !== '___END_LINE___')
+			.filter(item => item !== PL && item !== EL)
 			.map((item, index) => ({text: item, time: time_arr[index] + time_offset})),
-			{text: '___END_LINE___', time: this.lyric_duration}
+			{text: EL, time: this.lyric_duration}
 		]
 		;
 	};
@@ -44,7 +45,7 @@ export default class LyricTimeLines {
 				{time: this.getLyricTotalDuration(), text: ""}
 			]
 		)
-		.filter(({text}) => text !== '___PRE_LINE___' && text !== '___END_LINE___')
+		.filter(({text}) => text !== PL && text !== EL)
 		.map(({time, text}) =>
 			["[", fecha.format(new Date(time), time_tag_mask), "]", text].join("")
 		)
