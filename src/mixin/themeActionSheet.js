@@ -26,7 +26,7 @@ module.exports = {
 				{is_action_sheet_show: false}
 			);
 			wx.nextTick(() => {
-				that[tapEventName]()
+				that[tapEventName](event)
 			});
 		}
 	},

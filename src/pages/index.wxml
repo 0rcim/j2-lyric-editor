@@ -101,6 +101,7 @@
 				wx:key="index"
 				bindlongpress="openLyricActionSheet"
 				data-history-id="{{list_item.id}}"
+				data-name="{{list_item.name}}"
 				bindtap="navigateToHistoryPreviewerPage"
 			>
 				<view class="weui-grid__icon">
@@ -151,6 +152,7 @@
 				wx:for="{{action_menu_list}}"
 				wx:key="index"
 				data-tap-event-name="{{item.tap_event_name}}"
+				data-history-id="{{item.data_history_id}}"
 				bindtap="bindActionSheetTap"
 			>{{item.text}}</view>
 		</view>

@@ -78,9 +78,31 @@ Page(
 							)
 					}
 				);
+				return new Promise(resolve => wx.nextTick(() => resolve()));
 			});
 		},
+		updatePageHistoryList () {
+			wx_storage.get("history")
+			.then(list => {
+				console.log(list);
+				const history_list_by_month = HistoryStorageData.parseItemListGroupByMonth(
+					history_storage,
+					list
+				);
+				this.setData({history_list_by_month});
+			})
+			.catch(err => {
+				console.error(err);
+			});
+			wx.nextTick(
+				() => {
+					this.updateScrollAnchorPositionData();
+					wx.stopPullDownRefresh();
+				}
+			);
+		},
 		onLoad () {
+			this.updatePageHistoryList();
 			// const t = HistoryStorageData.parseItemListGroupByMonth(
 			// 	history_storage,
 			// 	[...new Array(400)]
@@ -98,23 +120,6 @@ Page(
 			// this.setData(
 			// 	{history_list_by_month: t}
 			// );
-			wx_storage.get("history")
-			.then(list => {
-				console.log(list);
-				const history_list_by_month = HistoryStorageData.parseItemListGroupByMonth(
-					history_storage,
-					list
-				);
-				this.setData({history_list_by_month});
-			})
-			.catch(err => {
-				console.error(err);
-			});
-			wx.nextTick(
-				() => {
-					this.updateScrollAnchorPositionData();
-				}
-			);
 		},
 		changeTheme () {
 			getApp().themeChanged(
@@ -218,24 +223,54 @@ Page(
 				console.log(err);
 			});
 		},
-		openLyricActionSheet () {
+		openLyricActionSheet (event) {
+			console.log(event);
+			const {historyId, name} = event.currentTarget.dataset;
 			this.openActionSheet(
 				{
-					title: "111.lrc",
+					title: name,
 					menu_list:
 					[
 						{
 							text: "查看详情",
-							tap_event_name: ""
+							data_history_id: historyId,
+							tap_event_name: "navigateToHistoryPreviewerPage"
 						},
 						{
 							text: "删除",
 							type: "warn",
-							tap_event_name: ""
+							data_history_id: historyId,
+							tap_event_name: "deleteHistoryItem"
 						}
 					]
 				}
 			);
+		},
+		deleteHistoryItem (event) {
+			const {historyId} = event.currentTarget.dataset;
+			console.log(historyId);
+			wx_storage.set(
+				"history",
+				({history: history_list}) => {
+					const others = history_list.filter(({id}) => id !== historyId);
+					console.log("others", others)
+					return others;
+				}
+			)
+			.then(res => {
+				console.log("success:", res);
+				this.updatePageHistoryList();
+			})
+			.catch(err => {
+				console.error(err);
+			});
+		},
+		onPullDownRefresh () {
+			this.updatePageHistoryList();
+		},
+		onShow () {
+			wx.startPullDownRefresh();
+			this.updatePageHistoryList();
 		}
 	}
 );

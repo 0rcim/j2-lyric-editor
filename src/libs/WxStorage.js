@@ -112,7 +112,11 @@ function object_assign (source, target_key_string, target_value_data) {
 		let temp_index = idx + 1;
 		for (let key in source_child) {
 			if (key === list[temp_index] && typeof child[key] === "object") {
-				assign(child[key], source_child[key], temp_index);
+				if (child[key] instanceof Array) {
+					// ...
+				} else {
+					assign(child[key], source_child[key], temp_index);
+				}
 			} else if (key === list[temp_index] && typeof child[key] !== "object") {
 				child[key] = target_value_data;
 			} else {
@@ -121,6 +125,7 @@ function object_assign (source, target_key_string, target_value_data) {
 		}
 	}
 	assign(temp, source, -1);
+	console.log("===>", temp)
 	return temp;
 }
 
