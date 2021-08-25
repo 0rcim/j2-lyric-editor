@@ -1,6 +1,11 @@
 <view class="page" data-weui-theme="{{theme}}">
-	<mp-navigation-bar title="J2LyricEditor" back="{{false}}">
-
+	<mp-navigation-bar style="background-color:red" back="{{false}}">
+		<view data-scroll-to-y-position="{{scroll_to_y}}" id="app-name" class="app-name" bindtap="scrollTo" slot="left">
+			<text>J2LyricEditor</text>
+			<view class="cover-align" wx:if="{{current_month_date_text}}">
+				<text>{{current_month_date_text}}</text>
+			</view>
+		</view>
 	</mp-navigation-bar>
 	<swiper autoplay="{{false}}" next-margin="50px">
 		<swiper-item>
@@ -84,20 +89,73 @@
 	<view class="weui-loadmore weui-loadmore_line" style="margin-top:3rem">
 		<text class="weui-loadmore__tips" style="{{'background-color:' + theme_bg}}">编辑历史</text>
 	</view>
-	<view class="weui-cells__title">2021-08-21</view>
-	<view class="weui-grids">
-		<a class="weui-grid">
-			<view class="weui-grid__icon">
-				<mp-icon type="field" icon="copy" size="{{25}}" color="{{theme_sub_fg}}"></mp-icon>
-			</view>
-			<a class="weui-grid__label">123.lrc</a>
-		</a>
+	<view wx:if="{{history_list_by_month.length === 0}}" class="weui-footer history-empty">
+		<view class="weui-footer__text">暂无记录</view>
 	</view>
+	<block wx:for="{{history_list_by_month}}" wx:key="index" wx:for-item="month_item">
+		<view class="weui-cells__title month-date-title" data-month-date-text="{{month_item.month_date}}" id="mdt-{{index}}">{{month_item.month_date}}</view>
+		<view class="weui-grids history-month-container">
+			<a class="weui-grid"
+				wx:for="{{month_item.list}}"
+				wx:for-item="list_item"
+				wx:key="index"
+				bindlongpress="openLyricActionSheet"
+				data-history-id="{{list_item.id}}"
+				bindtap="navigateToHistoryPreviewerPage"
+			>
+				<view class="weui-grid__icon">
+					<mp-icon type="field" icon="copy" size="{{25}}" color="{{theme_sub_fg}}"></mp-icon>
+				</view>
+				<a class="weui-grid__label">{{list_item.name}}</a>
+			</a>
+		</view>
+	</block>
 	<view class="fadeIn {{hide_warn_toast ? 'fadeOut' : ''}}" wx:if="{{warn_toast}}">
 		<view class="weui-mask_transparent"></view>
 		<view class="weui-toast">
 			<i class="weui-icon-warn weui-icon_toast"></i>
 			<view class="weui-toast__content">{{warn_msg}}</view>
+		</view>
+	</view>
+</view>
+<view class="fadeIn" wx:if="{{is_dialog_open}}">
+	<view class="weui-mask" style="z-index:5002" bindtap="bindTapDialogShade"></view>
+	<view class="weui-dialog weui-skin_android" style="z-index:5003">
+		<view class="weui-dialog__hd"><strong class="weui-dialog__title">{{dialog_title}}</strong></view>
+		<view class="weui-dialog__bd">
+			{{dialog_bd_content}}
+		</view>
+		<view class="weui-dialog__ft">
+			<a class="weui-dialog__btn weui-dialog__btn_{{item.type}}"
+				wx:for="{{dialog_btn_group}}"
+				wx:key="index"
+				data-idx="{{index}}"
+				data-tap-event-name="{{item.tap_event_name}}"
+				bindtap="bindDailogBtnTap"
+
+				data-selector="#count-down-number"
+				data-countdown-num="{{COUNTDOWN_NUM}}"
+				data-end-callback-fn-name="bindCountDownEnd"
+			>{{item.text}}</a>
+		</view>
+	</view>
+</view>
+<view wx:if="{{is_action_sheet_show}}" class="fadeIn">
+	<view class="weui-mask" style="z-index:5002" bindtap="bindTapActionSheetShade"></view>
+	<view class="weui-actionsheet weui-actionsheet_toggle" style="z-index:5003">
+		<view class="weui-actionsheet__title">
+			<view class="weui-actionsheet__title-text">{{action_sheet_title}}</view>
+		</view>
+		<view class="weui-actionsheet__menu">
+			<view class="weui-actionsheet__cell {{item.type ? 'weui-actionsheet__cell_' + item.type : ''}}"
+				wx:for="{{action_menu_list}}"
+				wx:key="index"
+				data-tap-event-name="{{item.tap_event_name}}"
+				bindtap="bindActionSheetTap"
+			>{{item.text}}</view>
+		</view>
+		<view class="weui-actionsheet__action">
+			<view class="weui-actionsheet__cell" bindtap="__close_action_sheet__">取消</view>
 		</view>
 	</view>
 </view>

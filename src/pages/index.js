@@ -1,4 +1,12 @@
 import TextFileParser from "../libs/TextFileParser";
+import HistoryStorageData from "../libs/HistoryStorageData";
+import fecha from "../plugins/fecha";
+import WxBoundingRect from "../libs/WxBoundingRect";
+
+const wx_bg_rect = new WxBoundingRect();
+
+const { wx_storage, history_storage } =  getApp().globalData;
+
 Page(
 	{
 		mixins: [
@@ -7,11 +15,106 @@ Page(
 			require("../mixin/readingTextFile"), 
 			require("../mixin/messageToast"),
 			require("../mixin/readingClipboardData"),
-			require("../mixin/wxFileManagerReader")
+			require("../mixin/wxFileManagerReader"),
+			require("../mixin/themeDialog"),
+			require("../mixin/themeActionSheet")
 		],
 		data: {
 			MAX_FILE_SIZE: 60 * 1024, /* 60Kb */
-			MAX_LINE_LENGTH: 200
+			MAX_LINE_LENGTH: 200,
+			nav_bar_bg: "",
+			history_list_by_month: [],
+			month_date_title_elem_bd_data: [],
+			current_month_date_text: "",
+			scroll_to_y: 0
+		},
+		scrollTo (event) {
+			const {scrollToYPosition} = event.currentTarget.dataset;
+			wx.pageScrollTo(
+				{
+					scrollTop: scrollToYPosition << 0,
+					duration: 200
+				}
+			);
+		},
+		onPageScroll ({ scrollTop }) {
+			let d = this.data.month_date_title_elem_bd_data;
+			for (let {monthDateText, top} of d) {
+				if (scrollTop >= top) {
+					this.setData(
+						{
+							current_month_date_text: monthDateText,
+							scroll_to_y: top
+						}
+					);
+					break;
+				}
+			}
+			if (scrollTop < d[d.length-1].top) this.setData({current_month_date_text: "", scroll_to_y: 0});
+		},
+		updateScrollAnchorPositionData () {
+			return Promise.all(
+				[
+					wx_bg_rect.getBoundingClientRect(
+						"#app-name",
+						({bottom}, resolve) => resolve(bottom)
+					),
+					...this.data.history_list_by_month
+					.map((item, index) => 
+						wx_bg_rect.getBoundingClientRect(
+							"#mdt-" + index, 
+							({dataset: {monthDateText}, top}, resolve) => resolve({top, monthDateText})
+						)
+					)
+					.reverse()
+				]
+			)
+			.then(([nav_rect_bottom, ...bd_rects]) => {
+				this.setData(
+					{
+						month_date_title_elem_bd_data: 
+							bd_rects.map(
+								({top, monthDateText}) => ({monthDateText, top: top - nav_rect_bottom - 10})
+							)
+					}
+				);
+			});
+		},
+		onLoad () {
+			// const t = HistoryStorageData.parseItemListGroupByMonth(
+			// 	history_storage,
+			// 	[...new Array(400)]
+			// 	.map((u, i) => {
+			// 		let date = new Date(-i * 24 * 60 * 60 * 1000 +  1629688133639);
+			// 		return (
+			// 			{
+			// 				a: date.valueOf(),
+			// 				e: fecha.format(date, "YYYY-MM-DD HH"),
+			// 				id: i
+			// 			}
+			// 		)
+			// 	})
+			// );
+			// this.setData(
+			// 	{history_list_by_month: t}
+			// );
+			wx_storage.get("history")
+			.then(list => {
+				console.log(list);
+				const history_list_by_month = HistoryStorageData.parseItemListGroupByMonth(
+					history_storage,
+					list
+				);
+				this.setData({history_list_by_month});
+			})
+			.catch(err => {
+				console.error(err);
+			});
+			wx.nextTick(
+				() => {
+					this.updateScrollAnchorPositionData();
+				}
+			);
 		},
 		changeTheme () {
 			getApp().themeChanged(
@@ -98,6 +201,41 @@ Page(
 				if ("err_msg" in err) that.showWarningToast({msg: err.err_msg});
 				console.log("err->", err)
 			})
+		},
+		navigateToHistoryPreviewerPage (event) {
+			const {historyId} = event.currentTarget.dataset;
+			wx_storage.get("history")
+			.then(data => {
+				const [target_item] = data.filter(item => item["id"] === historyId);
+
+				const parsed_item = history_storage.parseItem(target_item);
+				getApp().globalData.temp_history_item = parsed_item;
+				wx.navigateTo(
+					{url: "history-item-previewer/history-item-previewer"}
+				);
+			})
+			.catch(err => {
+				console.log(err);
+			});
+		},
+		openLyricActionSheet () {
+			this.openActionSheet(
+				{
+					title: "111.lrc",
+					menu_list:
+					[
+						{
+							text: "查看详情",
+							tap_event_name: ""
+						},
+						{
+							text: "删除",
+							type: "warn",
+							tap_event_name: ""
+						}
+					]
+				}
+			);
 		}
 	}
 );

@@ -29,7 +29,7 @@ module.exports = {
 			}
 		}
 	},
-	themeChanged(theme) {
+	themeChanged(theme="light") {
 		const theme_obj = this.data.themeColors[theme];
 		this.setData(theme_obj);
 		wx.setNavigationBarColor(

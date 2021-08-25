@@ -1,0 +1,46 @@
+<view class="page" data-weui-theme="{{theme}}">
+	<mp-navigation-bar title="记录详情" background="{{theme_bg}}"></mp-navigation-bar>
+	<view class="main-info-container">
+		<view class="main-info-box">
+			<view class="info-wrap">
+				<view class="title">{{inf.name}}</view>
+				<view class="birth-time">创建日期：{{inf.birth_time_text}}</view>
+			</view>
+		</view>
+	</view>
+	<view class="content-container">
+		<view class="content-type-title">
+			<view class="data-types type-{{activated_data_type}}">
+				<text data-type="{{0}}" bindtap="switchDataType">TXT</text>
+				<text data-type="{{1}}" bindtap="switchDataType">LRC</text>
+				<text data-type="{{2}}" bindtap="switchDataType">JSON</text>
+			</view>
+			<view class="option-button-group">
+				<view class="text-button weui-footer__link" bindtap="setCurrentTextToClipboard">
+					<text>复制当前文本</text>
+				</view>
+			</view>
+		</view>
+		<view class="content-lyric-lines-list">
+			<view wx:if="{{activated_data_type === 0}}" class="list-item data-type-txt">
+				<block wx:for="{{inf.data_type_txt}}" wx:for-item="lyric_item" wx:for-index="index" wx:key="index">
+					<view class="top-anchor-text">
+						<text>{{index + 1}}</text>
+					</view>
+					<view class="weui-article__p">{{lyric_item}}</view>
+				</block>
+			</view>
+			<view wx:if="{{activated_data_type === 1}}" class="list-item data-type-lrc">
+				<block wx:for="{{inf.data_type_lrc}}" wx:for-item="lyric_item" wx:for-index="index" wx:key="index">
+					<view class="top-anchor-text">
+						<text>{{index + 1}}</text>
+					</view>
+					<view class="weui-article__p">{{lyric_item}}</view>
+				</block>
+			</view>
+			<view wx:if="{{activated_data_type === 2}}" class="list-item data-type-json">
+				<view class="weui-article__p">{{inf.data_type_json}}</view>
+			</view>
+		</view>
+	</view>
+</view>

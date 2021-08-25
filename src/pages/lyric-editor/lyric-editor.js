@@ -8,6 +8,10 @@ import LyricPlayer from "../../libs/LyricPlayer";
 import WxAudioFragmentPlayer from "../../libs/WxAudioFragmentPlayer";
 import { EL, PL } from "../../libs/LyricLines.const";
 
+const { wx_storage, history_storage } = getApp().globalData;
+console.log(wx_storage.getSync("settings.NOCUBAD"))
+
+
 Page(
 	{
 		mixins: [
@@ -21,6 +25,7 @@ Page(
 			require("../../mixin/readingLrcFile")
 		],
 		data: {
+			loading: false,
 			EL, PL,
 			audio_round_progress_bg_img_style_text: "",
 			audio_duration_time_text: "",
@@ -29,7 +34,7 @@ Page(
 			lyrics: [],
 			current_line_idx: 0,
 			COUNTDOWN_NUM: 1,
-			never_open_confirm_use_background_audio_dialog: false,
+			never_open_confirm_use_background_audio_dialog: wx_storage.getSync("settings.NOCUBAD"),
 			recording_status: 0,
 			current_recording_line_idx: 0,
 			lyric_line_stamps: [],
@@ -155,7 +160,7 @@ Page(
 							{
 								text: "不再提示",
 								type: "default",
-								tap_event_name: "playCountdownAnimate"
+								tap_event_name: "noMoreOpenConfirmDialog"
 							},
 							{
 								text: "导入音频",
@@ -165,6 +170,15 @@ Page(
 						]
 					}
 				);
+		},
+		noMoreOpenConfirmDialog (event) {
+			wx_storage.set("settings.NOCUBAD", true)
+			.then(res => {
+				this.setData(
+					{never_open_confirm_use_background_audio_dialog: true}
+				);
+			});
+			this.playCountdownAnimate(event);
 		},
 		bindPauseStopWatch () {
 			let that = this;
@@ -223,27 +237,38 @@ Page(
 				`[${fecha.format(new Date(last_lyric_line_time), STOP_WATCH_MASK)}]` +
 				`[${fecha.format(inf.createDate, FILE_EXT_DATE_MASK)}]` +
 				'.lyric';
-			this.openDialog(
+			this.saveHistory(
 				{
-					title: "时间轴记录已保存",
-					content: `名称：${file_full_name}，可在程序首页编辑历史查看，请选择下一步操作`,
-					shadeClose: false,
-					btn: 
-					[
+					birth_time: inf.createDate.valueOf(),
+					audio_name: this.data.bg_audio_player?.audio_full_file_name || "",
+					audio_duration: this.data.bg_audio_player?.audio_ctx.duration || 0,
+					temp_audio_file_path: this.data.bg_audio_player?.file.path,
+					name: file_full_name,
+					lyric_time_lines: this.makeLyricTimeFileText()
+				},
+				(id) => {
+					this.openDialog(
 						{
-							text: "删除",
-							type: "default",
-							tap_event_name: "resetLyricEditor"
-						},
-						{
-							text: "预览",
-							type: "primary",
-							tap_event_name: "switchLyricPlayer"
-						},
-					]
+							title: "时间轴记录已保存",
+							content: `名称：${file_full_name}，可在程序首页编辑历史查看，请选择下一步操作`,
+							shadeClose: false,
+							btn: 
+							[
+								{
+									text: "删除",
+									type: "default",
+									tap_event_name: "resetLyricEditor"
+								},
+								{
+									text: "预览",
+									type: "primary",
+									tap_event_name: "switchLyricPlayer"
+								},
+							]
+						}
+					);
 				}
 			);
-			this.makeLyricTimeFileText();
 		},
 		resetLyricEditor (callback) {
 			const wx_bg_audio_player = getApp().globalData.wx_bg_audio_player;
@@ -307,6 +332,7 @@ Page(
 			console.log(
 				lyric_time_lines.getMap()
 			);
+			return lyric_time_lines.getMap();
 		},
 		toChooseMessageBgAudio () {
 			let that = this;
@@ -650,6 +676,31 @@ Page(
 			this.setData(
 				{preview_audio_player_status: 2}
 			);
+		},
+		saveHistory (item_data, callback) {
+			this.setData({loading: true});
+			let id = Date.now();
+			return wx_storage.set(
+				"history",
+				({history=[]}) => {
+					return history.concat([
+						history_storage.makeItem(
+							{
+								__ID__: id,
+								...item_data
+							}
+						)
+					]);
+				}
+			)
+			.then(() => {
+				this.setData({loading: false});
+				typeof callback === "function" && callback(id);
+			})
+			.catch(err => {
+				this.setData({loading: false});
+				console.error(err);
+			})
 		}
 	}
 );

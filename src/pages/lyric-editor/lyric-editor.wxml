@@ -1,5 +1,6 @@
 <view class="page" data-weui-theme="{{theme}}">
 	<mp-navigation-bar 
+		loading="{{loading}}"
 		title="{{recording_status === 1 || recording_status === 2 || recording_status === 3 ? editor_stopwatch_text + audio_duration_time_text : swiper_current_index === 0 ? (bg_audio_player ? bg_audio_player.audio_full_file_name : '时间轴录制') : '歌词播放预览'}}" background="{{theme_bg}}">
 
 	</mp-navigation-bar>

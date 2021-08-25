@@ -1,5 +1,46 @@
 @import (reference) "../styles/var.less";
 
+.page {
+	// height: auto;
+}
+
+.month-date-title {
+	color: @theme-color-light;
+	[data-weui-theme=dark] & {
+		color: @theme-color-dark;
+	}
+}
+
+.app-name {
+	position: relative;
+	z-index: inherit;
+	color: @theme-status-light;
+	.cover-align, &::before {
+		position: absolute;
+		top: -4px;
+		bottom: -4px;
+		left: -8px;
+		right: -8px;
+		border-radius: 4px;
+		background-image: linear-gradient(to bottom left, @theme-color-light, @theme-color-dark);
+		box-sizing: border-box;
+		border: 1px solid fadeout(@theme-status-light, 60%);
+	}
+	.cover-align {
+		z-index: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		line-height: 16px;
+		font-size: 16px;
+	}
+	&::before {
+		content: "";
+		display: block;
+		z-index: -1;
+	}
+}
+
 .weui-grid__icon {
 	display: flex;
 	justify-content: center;
@@ -104,4 +145,11 @@
 
 .main-func-list a.weui-grid .weui-grid__inner:active {
 	background-color: var(--weui-BG-COLOR-ACTIVE);
+}
+.history-month-container:last-child {
+	padding-bottom: 70px;
+}
+
+.history-month-container .weui-grid:active {
+	background-color: rgba(0, 0, 0, .01)
 }
