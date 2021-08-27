@@ -5,7 +5,7 @@ import WxBoundingRect from "../libs/WxBoundingRect";
 
 const wx_bg_rect = new WxBoundingRect();
 
-const { wx_storage, history_storage } =  getApp().globalData;
+const { wx_storage, history_storage, fav_storage } =  getApp().globalData;
 
 Page(
 	{
@@ -50,7 +50,7 @@ Page(
 					break;
 				}
 			}
-			if (scrollTop < d[d.length-1].top) this.setData({current_month_date_text: "", scroll_to_y: 0});
+			if (d[d.length-1] && scrollTop < d[d.length-1].top) this.setData({current_month_date_text: "", scroll_to_y: 0});
 		},
 		updateScrollAnchorPositionData () {
 			return Promise.all(
@@ -209,12 +209,13 @@ Page(
 		},
 		navigateToHistoryPreviewerPage (event) {
 			const {historyId} = event.currentTarget.dataset;
-			wx_storage.get("history")
-			.then(data => {
-				const [target_item] = data.filter(item => item["id"] === historyId);
-
-				const parsed_item = history_storage.parseItem(target_item);
-				getApp().globalData.temp_history_item = parsed_item;
+			wx_storage.get("favorites")
+			.then(fav_list => {
+				const iFavList = fav_storage.parseFavList(fav_list);
+				return iFavList.get(historyId)
+			})
+			.then(target_history_item_with_fav_level => {
+				getApp().globalData.temp_history_item = target_history_item_with_fav_level;
 				wx.navigateTo(
 					{url: "history-item-previewer/history-item-previewer"}
 				);
@@ -258,7 +259,20 @@ Page(
 				}
 			)
 			.then(res => {
-				console.log("success:", res);
+				console.log("f->delete history item");
+				return wx_storage.set(
+					"favorites",
+					({favorites: lv_list}) => {
+						for (let i=0; i<lv_list.length; i++) {
+							const idx = lv_list[i].indexOf(historyId);
+							lv_list[i].splice(idx, 1);
+						}
+						return lv_list;
+					}
+				);
+			})
+			.then(res => {
+				console.log("f->delete fav idx");
 				this.updatePageHistoryList();
 			})
 			.catch(err => {
@@ -269,8 +283,11 @@ Page(
 			this.updatePageHistoryList();
 		},
 		onShow () {
-			wx.startPullDownRefresh();
-			this.updatePageHistoryList();
+			if (getApp().globalData.history_changed) {
+				wx.startPullDownRefresh();
+				this.updatePageHistoryList();
+				getApp().globalData.history_changed = false;
+			}
 		}
 	}
 );

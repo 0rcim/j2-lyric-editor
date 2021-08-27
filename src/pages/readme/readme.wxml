@@ -1,0 +1,3 @@
+<view class="page" data-weui-theme="{{theme}}">
+	<mp-navigation-bar title="使用说明" background="{{theme_bg}}"></mp-navigation-bar>
+</view>

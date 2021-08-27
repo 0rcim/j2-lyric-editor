@@ -1,8 +1,28 @@
 import WxStorage from "./libs/WxStorage";
 import HistoryStorageData from "./libs/HistoryStorageData";
+import FavoriteStorageData from "./libs/FavoriteStorageData";
 
 const wx_storage = new WxStorage();
 const history_storage = new HistoryStorageData();
+const fav_storage = new FavoriteStorageData(
+	wx_storage,
+	history_storage
+);
+
+// fav_storage.saveFav(1629963400955, -1);
+
+// const fav_list = fav_storage.parseFavList(
+// 	[
+// 		[1629963400955, 1629974210843],
+// 		[1629974265629],
+// 		[1629974311403]
+// 	]
+// );
+
+// fav_list.get(1629974311403)
+// .then(target => {
+// 	console.log("target->", target)
+// });
 
 require("./libs/Mixins");
 
@@ -21,7 +41,8 @@ App(
 			wx_audio_fragment_player: null,
 			temp_audio_fragment_buffer_parts: null,
 			wx_storage,
-			history_storage
+			history_storage,
+			fav_storage
 		},
 		themeChanged (theme) {
 			this.globalData.theme = theme;

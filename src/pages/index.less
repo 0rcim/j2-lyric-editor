@@ -87,6 +87,17 @@
 	border: 1px solid @theme-status-light;
 	box-shadow: 0px 3px 10px rgba(125, 125, 125, .12);
 	position: relative;
+	&.not-open::before {
+		content: "";
+		display: block;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background-color: rgba(125, 125, 125, .95);
+		z-index: 1;
+	}
 }
 
 [data-weui-theme=dark] .main-entry {

@@ -9,6 +9,30 @@
 		</view>
 	</view>
 	<view class="content-container">
+		<view class="top-align">
+			<view class="fav-level-container">
+				<view class="grids">
+					<a class="round-border">
+						<text class="left"/>
+						<text class="right"/>
+					</a>
+					<view class="disable-fav"
+						bindtap="clearHistoryItemFavLevel"
+					>
+						<mp-icon icon="star" type="outline" size="{{25}}" color="lightgray"></mp-icon>
+					</view>
+					<view 
+						wx:for="{{3}}"
+						wx:for-index="level_index"
+						data-index="{{level_index}}"
+						bindtap="setHistoryItemFavLevel"
+						wx:key="index"
+					>
+						<mp-icon icon="star" type="{{level_index <= (inf.fav_level - 1) ? 'field' : 'outline'}}" size="{{25}}" color="{{level_index <= (inf.fav_level - 1) ? theme_color : 'gray'}}"></mp-icon>
+					</view>
+				</view>
+			</view>
+		</view>
 		<view class="content-type-title">
 			<view class="data-types type-{{activated_data_type}}">
 				<text data-type="{{0}}" bindtap="switchDataType">TXT</text>

@@ -8,7 +8,7 @@ import LyricPlayer from "../../libs/LyricPlayer";
 import WxAudioFragmentPlayer from "../../libs/WxAudioFragmentPlayer";
 import { EL, PL } from "../../libs/LyricLines.const";
 
-const { wx_storage, history_storage } = getApp().globalData;
+const { wx_storage, history_storage, fav_storage } = getApp().globalData;
 console.log(wx_storage.getSync("settings.NOCUBAD"))
 
 
@@ -255,9 +255,10 @@ Page(
 							btn: 
 							[
 								{
-									text: "删除",
+									text: "详情",
 									type: "default",
-									tap_event_name: "resetLyricEditor"
+									data_history_id: id,
+									tap_event_name: "navigateToPreviewerPage"
 								},
 								{
 									text: "预览",
@@ -269,6 +270,24 @@ Page(
 					);
 				}
 			);
+		},
+		navigateToPreviewerPage (event) {
+			const {historyId} = event.currentTarget.dataset;
+			wx_storage.get("favorites")
+			.then(fav_list => {
+				const iFavList = fav_storage.parseFavList(fav_list);
+				return iFavList.get(historyId)
+			})
+			.then(target_history_item_with_fav_level => {
+				getApp().globalData.temp_history_item = target_history_item_with_fav_level;
+				wx.navigateTo(
+					{url: "../history-item-previewer/history-item-previewer"}
+				);
+			})
+			.catch(err => {
+				console.log(err);
+			});
+			this.resetLyricEditor();
 		},
 		resetLyricEditor (callback) {
 			const wx_bg_audio_player = getApp().globalData.wx_bg_audio_player;
@@ -532,12 +551,12 @@ Page(
 							text: "消息文件",
 							type: "primary",
 							tap_event_name: "useImportedLyricFile"
-						},
+						}/* ,
 						{
 							text: "缓存的文件",
 							type: "primary",
 							tap_event_name: ""
-						}
+						} */
 					]
 				}
 			);
@@ -695,12 +714,13 @@ Page(
 			)
 			.then(() => {
 				this.setData({loading: false});
+				getApp().globalData.history_changed = true;
 				typeof callback === "function" && callback(id);
 			})
 			.catch(err => {
 				this.setData({loading: false});
 				console.error(err);
-			})
+			});
 		}
 	}
 );

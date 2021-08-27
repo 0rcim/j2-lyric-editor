@@ -4,6 +4,8 @@
 	},
 	"pages": [
 		"pages/index",
+		"pages/favorites/favorites",
+		"pages/readme/readme",
 		"pages/settings/settings",
 		"pages/form-lyric-lines/form-lyric-lines",
 		"pages/lyric-editor/lyric-editor",

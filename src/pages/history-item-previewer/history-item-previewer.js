@@ -4,6 +4,8 @@ import { PL, EL } from "../../libs/LyricLines.const";
 
 import {DEFAULT_LRC_TAG_TIME} from "../../libs/fecha.mask";
 
+const { fav_storage } = getApp().globalData;
+
 Page(
 	{
 		mixins: [
@@ -20,13 +22,18 @@ Page(
 			const {
 				name, birth_time, audio_name, 
 				audio_duration, lyric_time_lines,
-				__ID__
+				__ID__,
+				fav_level,
+				page_locked
 			} = temp_history_item;
 			this.setData(
 				{
 					raw_data: JSON.parse(JSON.stringify(temp_history_item)),
 					inf:
 					{
+						page_locked,
+						fav_level,
+						id: __ID__,
 						name, 
 						birth_time_text: fecha.format(new Date(birth_time), "YYYY-MM-DD HH:mm:ss"),
 						data_type_txt: lyric_time_lines.map(({text, time}) => (text === PL || text === EL ? " " : text) || " " ),
@@ -66,6 +73,37 @@ Page(
 			.catch(err => {
 				console.error(err);
 			});
+		},
+		setFavLevel (level=0) {
+			if (this.data.inf.page_locked) return;
+			fav_storage.saveFav(
+				this.data.inf.id,
+				level
+			)
+			.then(res => {
+				this.setData(
+					{
+						inf:
+							Object.assign(
+								{},
+								this.data.inf,
+								{
+									fav_level: level
+								}
+							)
+					}
+				);
+			})
+			.catch(err => {
+				console.error(err);
+			});
+		},
+		setHistoryItemFavLevel (event) {
+			const {index} = event.currentTarget.dataset;
+			this.setFavLevel(index + 1)
+		},
+		clearHistoryItemFavLevel () {
+			this.setFavLevel(-1);
 		}
 	}
 );

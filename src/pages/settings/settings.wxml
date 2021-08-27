@@ -17,5 +17,8 @@
 		<view class="weui-footer__links" style="padding-top: 8px">
 			<a class="weui-footer__link">J2LyricEditor</a>
 		</view>
+		<view class="weui-footer__text" style="padding-top: 8px">
+			GitHub@0rcim/j2-lyric-editor
+		</view>
 	</view>
 </view>

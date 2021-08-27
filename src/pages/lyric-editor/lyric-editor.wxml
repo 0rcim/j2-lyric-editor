@@ -242,6 +242,7 @@
 				data-selector="#count-down-number"
 				data-countdown-num="{{COUNTDOWN_NUM}}"
 				data-end-callback-fn-name="bindCountDownEnd"
+				data-history-id="{{item.data_history_id}}"
 			>{{item.text}}</a>
 		</view>
 	</view>

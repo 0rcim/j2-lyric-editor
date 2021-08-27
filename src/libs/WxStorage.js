@@ -12,7 +12,8 @@ export default class WxStorage {
 			 */ 
 			NOCUBAD: false
 		},
-		history: []
+		history: [],
+		favorites: [[],[],[]]
 	};
 	constructor () {
 		if (wx.getStorageInfoSync().keys.length === 0) { // 小程序首次运行

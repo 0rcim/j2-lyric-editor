@@ -11,7 +11,10 @@
 		<swiper-item>
 			<view class="weui-flex top-entries">
 				<view class="weui-flex__item">
-					<view class="entry-my-fav main-entry">
+					<view class="entry-my-fav main-entry"
+						data-path="favorites/favorites"
+						bindtap="navigateTo"
+					>
 						<view class="icon-layer">
 							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="star"></mp-icon>
 						</view>
@@ -19,7 +22,10 @@
 					</view>
 				</view>
 				<view class="weui-flex__item">
-					<view class="entry-app-introduction main-entry">
+					<view class="entry-app-introduction main-entry"
+						data-path="readme/readme"
+						bindtap="navigateTo"
+					>
 						<view class="icon-layer">
 							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="help"></mp-icon>
 						</view>
@@ -31,11 +37,11 @@
 		<swiper-item>
 			<view class="weui-flex top-entries">
 				<view class="weui-flex__item">
-					<view class="entry-useful-tools main-entry">
+					<view class="entry-useful-tools main-entry not-open">
 						<view class="icon-layer">
 							<mp-icon size="{{55}}" color="{{theme_status_}}" type="outline" icon="more2"></mp-icon>
 						</view>
-						<view class="label-layer">辅助工具</view>
+						<view class="label-layer">敬请期待<!-- 辅助工具 --></view>
 					</view>
 				</view>
 				<view class="weui-flex__item">
