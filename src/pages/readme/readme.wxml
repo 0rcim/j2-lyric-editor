@@ -1,3 +1,41 @@
 <view class="page" data-weui-theme="{{theme}}">
 	<mp-navigation-bar title="使用说明" background="{{theme_bg}}"></mp-navigation-bar>
+	<view class="weui-article">
+		<view class="weui-article__h1">基本的使用流程</view>
+		<view class="weui-article__section">
+			<view class="weui-article__h2">一、导入歌词文本行</view>
+			<view class="weui-article__p">
+				小程序目前导入歌词文本的方法一共有三种，点击首页的“新建”、从微信的聊天文件中选择聊天文件（目前仅支持TXT）、事先复制一段歌词文本，点击“来自剪切板”，以导入文本行。性能原因，建议文件大小不超过60kB，总行数不超过200。
+			</view>
+			<view class="weui-article__h2">二、录制每行歌词的时间点</view>
+			<view class="weui-article__p">
+				可以通过第三方音乐播放器后台播放、或者从消息文件中引入音频的方式开始听录时间轴。推荐以后者的方式进行，具体方法如下：在“时间轴录制”界面，点击界面绿色按钮上方“从消息记录导入音频”按钮，从消息记录中选择音频，待导入完毕后，界面标题会显示成音频文件的名称。
+			</view>
+			<view class="weui-article__p">
+				然后点击下方的绿色开始按钮，待预备倒计时结束，开始进行时间轴的录制。当相对应的的歌词行唱完，再次按下绿色换行按钮，开始记录下一句歌词开始的时间，这样操作直到完成最后一行歌词时间点的录制。
+			</view>
+			<view class="weui-article__h2">三、播放预览</view>
+			<view class="weui-article__p">
+				当尾行的歌词完成录制后，程序会弹出已保存的提示对话框，点击“预览”会滑动切换至播放预览页，如果之前在录制前已经导入过音频，当点击该页面下的播放按钮时，会同步播放音频和歌词（类似一个小型的歌词音乐播放器程序）；点击“详情”则跳转到本次录制好的时间轴文件详情页面，在此页面下：可对文件进行设置收藏等级、时间轴文本以及LRC格式内容复制等操作。
+			</view>
+		</view>
+		<view class="weui-article__h1">历史记录的管理</view>
+		<view class="weui-article__section">
+			<view class="weui-article__p">
+				当完成一次歌词的时间轴录制操作之后，小程序会在历史记录之后追加一条并保存至本地，返回首页，在首页会以月份为组回显本地缓存中的历史记录。
+			</view>
+			<view class="weui-article__h2">
+				删除记录
+			</view>
+			<view class="weui-article__p">
+				在小程序首页，长按某条历史记录，选择删除即可。
+			</view>
+			<view class="weui-article__h2">
+				查看记录
+			</view>
+			<view class="weui-article__p">
+				在小程序首页，点击某条记录即可跳转到历史详情页即可查看记录。
+			</view>
+		</view>
+	</view>
 </view>

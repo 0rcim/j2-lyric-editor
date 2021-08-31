@@ -33,7 +33,7 @@ Page(
 			swiper_current_index: 0,
 			lyrics: [],
 			current_line_idx: 0,
-			COUNTDOWN_NUM: 1,
+			COUNTDOWN_NUM: 3,
 			never_open_confirm_use_background_audio_dialog: wx_storage.getSync("settings.NOCUBAD"),
 			recording_status: 0,
 			current_recording_line_idx: 0,
